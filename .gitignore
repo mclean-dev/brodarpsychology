@@ -1,0 +1,5 @@
+johnmclean/
+.htaccess
+wp-content/themes/
+wp-config.php
+!wp-content/themes/ascendoor-coach/
