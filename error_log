@@ -267,3 +267,5 @@ Stack trace:
 [18-Jun-2023 20:21:33 UTC] Cron reschedule event error for hook: nfd_data_sync_cron, Error code: invalid_schedule, Error message: Event schedule does not exist., Data: {"schedule":"minutely","args":[],"interval":60}
 [27-Jun-2023 12:27:59 UTC] Cron reschedule event error for hook: nfd_module_installer_theme_install_cron, Error code: invalid_schedule, Error message: Event schedule does not exist., Data: {"schedule":"ten_seconds","args":[],"interval":10}
 [27-Jun-2023 12:29:30 UTC] Cron reschedule event error for hook: nfd_module_installer_plugin_install_cron, Error code: invalid_schedule, Error message: Event schedule does not exist., Data: {"schedule":"thirty_seconds","args":[],"interval":30}
+[01-Jul-2023 23:26:31 UTC] PHP Warning:  Undefined property: stdClass::$publish in /home3/brodarps/public_html/wp-content/plugins/bluehost-wordpress-plugin/vendor/newfold-labs/wp-module-data/src/Listeners/Commerce.php on line 31
+[01-Jul-2023 23:26:31 UTC] PHP Warning:  Undefined property: stdClass::$publish in /home3/brodarps/public_html/wp-content/plugins/bluehost-wordpress-plugin/vendor/newfold-labs/wp-module-data/src/Listeners/Commerce.php on line 47
