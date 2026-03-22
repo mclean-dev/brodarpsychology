@@ -61,7 +61,7 @@ class Jetpack_Podcast_Helper {
 	/**
 	 * Retrieves tracks quantity.
 	 *
-	 * @returns int number of tracks
+	 * @return int number of tracks
 	 */
 	public static function get_tracks_quantity() {
 		/**
@@ -116,6 +116,10 @@ class Jetpack_Podcast_Helper {
 				);
 			} else {
 				$tracks = $this->get_track_list();
+			}
+
+			if ( is_wp_error( $tracks ) ) {
+				return $tracks;
 			}
 
 			if ( empty( $tracks ) ) {
@@ -224,7 +228,7 @@ class Jetpack_Podcast_Helper {
 			return $rss;
 		}
 
-		$tracks_quantity = $this->get_tracks_quantity();
+		$tracks_quantity = static::get_tracks_quantity();
 
 		/**
 		 * Allow requesting a specific number of tracks from SimplePie's `get_items` call.
@@ -243,7 +247,7 @@ class Jetpack_Podcast_Helper {
 		$track_list = array_map( array( __CLASS__, 'setup_tracks_callback' ), $rss->get_items( 0, $tracks_quantity ) );
 
 		// Filter out any tracks that are empty.
-		// Reset the array indicies.
+		// Reset the array indices.
 		return array_values( array_filter( $track_list ) );
 	}
 
@@ -485,7 +489,7 @@ class Jetpack_Podcast_Helper {
 	 */
 	protected function get_audio_enclosure( SimplePie_Item $episode ) {
 		foreach ( (array) $episode->get_enclosures() as $enclosure ) {
-			if ( 0 === strpos( $enclosure->type, 'audio/' ) ) {
+			if ( str_starts_with( $enclosure->type, 'audio/' ) ) {
 				return $enclosure;
 			}
 		}
@@ -496,7 +500,7 @@ class Jetpack_Podcast_Helper {
 	/**
 	 * Returns the track duration as a formatted string.
 	 *
-	 * @param number $duration of the track in seconds.
+	 * @param int|float $duration of the track in seconds.
 	 * @return string
 	 */
 	protected function format_track_duration( $duration ) {

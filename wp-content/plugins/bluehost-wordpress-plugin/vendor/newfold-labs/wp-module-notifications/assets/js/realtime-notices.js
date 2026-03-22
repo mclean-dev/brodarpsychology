@@ -24,10 +24,10 @@
 
 			let shouldShow = false;
 
-			// Don't show if it already exists
-			if (document.querySelector('div.newfold-realtime-notice[data-id="' + this.id + '"]') !== null) {
-				return shouldShow;
-			}
+			// Don't show if it already exists as a realtime or default notification
+            if (document.querySelector('div.newfold-realtime-notice[data-id="' + this.id + '"]') !== null || document.querySelector('div.newfold-notice[data-id="' + this.id + '"]') !== null ) {
+                return shouldShow;
+            }
 
 			// Check if notice has expired
 			if (this.expiration > Math.round(Date.now() / 1000)) {
@@ -106,13 +106,13 @@
 			e.preventDefault();
 			this.removeElement();
 			window.fetch(
-				`${ window.newfoldRealtimeNotices.restApiUrl }newfold-notifications/v1/notifications/${ this.id }`,
+				`${ window.NewfoldRuntime.restUrl }newfold-notifications/v1/notifications/${ this.id }`,
 				{
 					credentials: 'same-origin',
 					method: 'DELETE',
 					headers: {
 						'Content-Type': 'application/json',
-						'X-WP-Nonce': window.newfoldRealtimeNotices.restApiNonce,
+						'X-WP-Nonce': window.NewfoldRuntime.restNonce,
 					},
 				}
 			);
@@ -132,13 +132,13 @@
 				data.href = e.target.getAttribute('href');
 			}
 			window.fetch(
-				`${ window.newfoldRealtimeNotices.restApiUrl }newfold-data/v1/events/`,
+				`${ window.NewfoldRuntime.restUrl }newfold-data/v1/events/`,
 				{
 					credentials: 'same-origin',
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						'X-WP-Nonce': window.newfoldRealtimeNotices.restApiNonce,
+						'X-WP-Nonce': window.NewfoldRuntime.restNonce,
 					},
 					body: JSON.stringify(data),
 				}
@@ -147,42 +147,232 @@
 
 	}
 
+	class PluginAndThemeSearchResult extends RealtimeNotice {
+
+		searchQuery = '';
+		storedQuery = '';
+		action;
+		wpContainerSelector;
+		cardSelector;
+
+		constructor({id, content, expiration, locations, query}, searchQuery, action) {
+			super({id, content, expiration, locations});
+			this.searchQuery = searchQuery;
+			this.storedQuery = query;
+			this.action = action;
+			switch (action) {
+				case 'plugin_search':
+					this.wpContainerSelector = '#the-list';
+					this.cardSelector = 'plugin-card';
+				break;
+				case 'theme_search':
+					this.wpContainerSelector = '#wpbody-content > div.wrap > div.theme-browser.content-filterable.rendered > div';
+					this.cardSelector = 'theme';
+				break;
+			}
+		}
+
+		shouldShow() {
+
+			let shouldShow = false;
+
+			// Don't show if it already exists
+			if (document.querySelector(this.cardSelector + 'div.' + this.cardSelector + '.newfold-search-results[data-id="' + this.id + '"]') !== null) {
+				return shouldShow;
+			}
+
+			const queryTokens = this.searchQuery.split(" ");
+			const regexPattern = new RegExp('^' + this.storedQuery.toLowerCase().replace(/\*/g, '.*') + '$');
+			let isQueryMatch = false;
+			queryTokens.forEach(queryToken => {
+				if (regexPattern.test(queryToken.toLowerCase())) {
+					isQueryMatch = true;
+					return;
+				}
+			});
+
+			if (!isQueryMatch) {
+				return shouldShow;
+			}
+
+			// Check if notice has expired
+			if (this.expiration > Math.round(Date.now() / 1000)) {
+
+				// Check if any location has the proper context
+				this.locations.forEach(
+					({context, pages}) => {
+						switch (this.action) {
+							case 'plugin_search':
+								if ('wp-plugin-search' === context) {
+									if (Array.isArray(pages) && pages.includes('plugin-install.php')) {
+										shouldShow = true;
+									}
+									if (pages === 'all') {
+										shouldShow = true;
+									}
+								}
+							break;
+							case 'theme_search':
+								if ('wp-theme-search' === context) {
+									if (Array.isArray(pages) && pages.includes('theme-install.php')) {
+										shouldShow = true;
+									}
+									if (pages === 'all') {
+										shouldShow = true;
+									}
+								}
+							break;
+						}
+					}
+				);
+
+			}
+			return shouldShow;
+		}
+
+		createElement() {
+			const el = document.createElement('div');
+			el.setAttribute('class', `${this.cardSelector} newfold-search-results`);
+			el.setAttribute('data-id', this.id);
+			el.innerHTML = this.content;
+			this.el = el;
+			return el;
+		}
+
+		insertElement(el) {
+			const insertIntoList = () => {
+				const theList = document.querySelector(this.wpContainerSelector);
+				if (theList) {
+					clearInterval(interval);
+					theList.insertAdjacentElement('afterbegin', el);
+					this.addEventListeners(el);
+				}
+			};
+		
+			const interval = setInterval(insertIntoList, 100);
+		}
+
+		addEventListeners( el ) {
+            // Handle notification close/dismiss events
+            const dismissButton = el.querySelector( '[data-action="dismiss-search"]' );
+            if ( dismissButton ) {
+                dismissButton.addEventListener(
+                    'click',
+                    this.dismissSearch.bind( this )
+                );
+            }
+        }
+
+        dismissSearch( e ) {
+            // e.preventDefault();
+            window.fetch(
+                `${ window.NewfoldRuntime.restUrl }newfold-notifications/v1/notifications/${ this.id }`,
+                {
+                    credentials: 'same-origin',
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': window.NewfoldRuntime.restNonce,
+                    },
+                }
+            );
+        }
+
+	}
+
 	class PluginSearch {
 
 		inputHandler = _.debounce(this.onPluginSearch.bind(this), 1000);
+		searchQuery;
+		typeSelector = '';
+		action;
 
 		static init() {
 			const event = new PluginSearch();
+			switch (newfoldRealtimeData?.screenID) {
+				case 'plugin-install':
+					event.searchInputSelector = 'search-plugins';
+					event.typeSelector = 'typeselector';
+					event.action = 'plugin_search';
+				break;
+				case 'theme-install':
+					event.searchInputSelector = 'wp-filter-search-input';
+					event.action = 'theme_search';
+				break;
+			}
 			event.enable();
 		}
 
 		enable() {
-			document
-				.getElementById('search-plugins')
-				.addEventListener('input', this.inputHandler);
-			document
-				.getElementById('typeselector')
-				.addEventListener('change', this.onPluginSearch.bind(this));
+			const addEventListeners = () => {
+				const searchInput = document.getElementById(this.searchInputSelector);
+				if (searchInput) {
+					searchInput.addEventListener('input', this.inputHandler);
+				}
+
+				if (this.typeSelector) {
+					const typeSelector = document.getElementById(this.typeSelector);
+					if (typeSelector) {
+						typeSelector.addEventListener('change', this.onPluginSearch.bind(this));
+					}
+				}
+			};
+
+			// Check if elements are already in the DOM
+			if (document.getElementById(this.searchInputSelector) && (!this.typeSelector || document.getElementById(this.typeSelector))) {
+				addEventListeners();
+				return;
+			}
+
+			// Set up a MutationObserver to watch for changes in the DOM
+			const observer = new MutationObserver(() => {
+				const searchInputExists = document.getElementById(this.searchInputSelector);
+				const typeSelectorExists = !this.typeSelector || document.getElementById(this.typeSelector);
+
+				if (searchInputExists && typeSelectorExists) {
+					addEventListeners();
+					observer.disconnect();  // Stop observing once elements are found
+				}
+			});
+
+			// Start observing the document for child elements being added
+			observer.observe(document.body, { childList: true, subtree: true });
 		}
 
 		disable() {
 			document
-				.getElementById('search-plugins')
+				.getElementById(this.searchInputSelector)
 				.removeEventListener('input', this.inputHandler);
-			document
-				.getElementById('typeselector')
+			if (this.typeSelector) {
+				document
+				.getElementById(this.typeSelector)
 				.removeEventListener('change', this.onPluginSearch.bind(this));
+			}
 		}
 
 		onPluginSearch(e) {
-			const type = document.getElementById('typeselector').value;
-			const query = document.getElementById('search-plugins').value;
-			this.checkForNotices({action: 'plugin_search', data: {type, query}});
+			const type = this.typeSelector ? document.getElementById(this.typeSelector).value : '';
+			const query = document.getElementById(this.searchInputSelector).value;
+			this.searchQuery = query;
+			this.checkForNotices({action: this.action, data: {type, query}});
+		}
+
+		clearExistingSearchResults() {
+			var existingElements = document.getElementsByClassName('newfold-search-results');
+			var elementsArray = Array.from(existingElements);
+			elementsArray.forEach(function(element) {
+				element.remove();
+			});
 		}
 
 		onReceiveNotices(notices) {
 			notices.forEach(notice => {
 				(new RealtimeNotice(notice)).maybeRender();
+			});
+
+			this.clearExistingSearchResults();
+			notices.forEach(notice => {
+				(new PluginAndThemeSearchResult(notice, this.searchQuery, this.action)).maybeRender();
 			});
 		}
 
@@ -190,13 +380,13 @@
 			event.queue = false;
 			window
 				.fetch(
-					`${ window.newfoldRealtimeNotices.restApiUrl }newfold-notifications/v1/notifications/events`,
+					`${ window.NewfoldRuntime.restUrl }newfold-notifications/v1/notifications/events`,
 					{
 						credentials: 'same-origin',
 						method: 'POST',
 						headers: {
 							'Content-Type': 'application/json',
-							'X-WP-Nonce': window.newfoldRealtimeNotices.restApiNonce,
+							'X-WP-Nonce': window.NewfoldRuntime.restNonce,
 						},
 						body: JSON.stringify(event),
 					}

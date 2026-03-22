@@ -4,9 +4,9 @@ Plugin URI: https://editorskit.com
 Contributors: munirkamal
 Tags: Gutenberg blocks, WordPress blocks, gutenberg, blocks, Gutenberg editor
 Requires at least: 5.0
-Tested up to: 6.2
+Tested up to: 6.5
 Requires PHP: 5.6
-Stable tag: 1.34.9
+Stable tag: 1.40.6
 License: GPL-3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -20,6 +20,12 @@ You can now have better control, text formats, styling and workflow by simply ut
 
 = See for yourself =
 https://www.youtube.com/watch?v=QWgO4lAJAlE
+
+## New: Block Styles Manager
+
+https://www.youtube.com/watch?v=SGEhm4_sXT4
+
+You can now easily create and manage all of your block styles with the new styles manager.
 
 ## Rich Text Formats
 [EditorsKit](https://editorskit.com?utm_medium=wp.org&utm_source=wordpressorg&utm_campaign=readme&utm_content=editorskit) also adds the missing text formats for better content creation. The following rich text format are available upon plugin activation:
@@ -190,6 +196,31 @@ e.g.
 10. Link rel attributes nofollow and sponsored option
 
 == Changelog ==
+
+= 1.40.6
+* Fix: Consecutive 3 paragraph space issue.
+
+= 1.40.5
+* Fix: Add allowed tags restriction in editorskit shortcode.
+
+= 1.40.4
+* Fix: Added a check for file type in styles importer to improve security.
+
+= 1.40.3
+* Fix: Styles manager conflicting with other post types.
+
+= 1.40.2 =
+* Improve: Added instruction video for styles manager.
+* Improve: Added redirection to the admin page in the editor.
+* Improve: Fix Bundling.
+* Fix: Conflicts with page templates.
+
+= 1.40.1 =
+* New: Styles Manager for blocks
+
+= 1.40.0 =
+* New: Gutenberghub Template Library
+* Fix: Bugs
 
 = 1.34.9 =
 * Fix: Query loop issue with the archive pages

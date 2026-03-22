@@ -10,14 +10,15 @@ import {
 import { useConnectionErrorNotice, ConnectionError } from '@automattic/jetpack-connection';
 import apiFetch from '@wordpress/api-fetch';
 import { ExternalLink } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
 import { createInterpolateElement, useState, useEffect, useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import useAnalytics from '../../hooks/useAnalytics';
+import useBackupsState from '../../hooks/useBackupsState';
 import useCapabilities from '../../hooks/useCapabilities';
 import useConnection from '../../hooks/useConnection';
-import { STORE_ID } from '../../store';
 import { Backups, Loading as BackupsLoadingPlaceholder } from '../Backups';
+import { BackupConnectionScreen } from '../backup-connection-screen';
+import { BackupSecondaryAdminConnectionScreen } from '../backup-connection-screen/secondary-admin';
 import BackupStorageSpace from '../backup-storage-space';
 import ReviewRequest from '../review-request';
 import Header from './header';
@@ -32,7 +33,7 @@ import '../masthead/masthead-style.scss';
 
 /* eslint react/react-in-jsx-scope: 0 */
 const Admin = () => {
-	const [ connectionStatus, , BackupSecondaryAdminConnectionScreen ] = useConnection();
+	const connectionStatus = useConnection();
 	const { tracks } = useAnalytics();
 	const { hasConnectionError } = useConnectionErrorNotice();
 	const connectionLoaded = 0 < Object.keys( connectionStatus ).length;
@@ -117,49 +118,22 @@ const Admin = () => {
 	);
 };
 
-// Renders additional segments under the jp-hero area condition on having a backup plan
-const BackupSegments = ( hasBackupPlan, connectionLoaded ) => {
-	const [ connectionStatus ] = useConnection();
+// Render additional segments for the backup admin page under the jp-hero section.
+// If the user has a backup plan and is connected, we render the storage space segment.
+const BackupSegments = ( { hasBackupPlan, connectionLoaded } ) => {
+	const connectionStatus = useConnection();
 	const { tracks } = useAnalytics();
-	const domain = useSelect( select => select( STORE_ID ).getCalypsoSlug(), [] );
 
 	const trackLearnMoreClick = useCallback( () => {
 		tracks.recordEvent( 'jetpack_backup_learn_more_click' );
 	}, [ tracks ] );
 
-	const trackSeeSiteActivityClick = useCallback( () => {
-		tracks.recordEvent( 'jetpack_backup_see_site_activity_click', { site: domain } );
-	}, [ tracks, domain ] );
+	const trackLearnBackupBrowserClick = useCallback( () => {
+		tracks.recordEvent( 'jetpack_backup_learn_file_browser_click' );
+	}, [ tracks ] );
 
 	return (
 		<Container horizontalSpacing={ 3 } horizontalGap={ 3 } className="backup-segments">
-			<Col lg={ 6 } md={ 6 }>
-				<h2>{ __( "Your site's heartbeat", 'jetpack-backup-pkg' ) }</h2>
-				<p>
-					{ __(
-						'The activity log lets you see everything that’s going on with your site outlined in an organized, readable way.',
-						'jetpack-backup-pkg'
-					) }
-				</p>
-				{ hasBackupPlan && connectionStatus.isUserConnected && (
-					<p>
-						<ExternalLink
-							href={ getRedirectUrl( 'backup-plugin-activity-log', { site: domain } ) }
-							onClick={ trackSeeSiteActivityClick }
-						>
-							{ __( "See your site's activity", 'jetpack-backup-pkg' ) }
-						</ExternalLink>
-					</p>
-				) }
-			</Col>
-			{ hasBackupPlan && connectionStatus.isUserConnected && (
-				<>
-					<Col lg={ 1 } md={ 1 } />
-					<Col lg={ 5 } md={ 5 } className="backup-segments__storage-section">
-						{ <BackupStorageSpace /> }
-					</Col>
-				</>
-			) }
 			<Col lg={ 6 } md={ 6 }>
 				<h2>{ __( 'Restore points created with every edit', 'jetpack-backup-pkg' ) }</h2>
 				<p>
@@ -173,7 +147,32 @@ const BackupSegments = ( hasBackupPlan, connectionLoaded ) => {
 						href={ getRedirectUrl( 'jetpack-blog-realtime-mechanics' ) }
 						onClick={ trackLearnMoreClick }
 					>
-						{ __( 'Learn more', 'jetpack-backup-pkg' ) }
+						{ __( 'Learn about real-time backups', 'jetpack-backup-pkg' ) }
+					</ExternalLink>
+				</p>
+			</Col>
+			{ hasBackupPlan && connectionStatus.isUserConnected && (
+				<>
+					<Col lg={ 1 } md={ 1 } />
+					<Col lg={ 5 } md={ 5 } className="backup-segments__storage-section">
+						{ <BackupStorageSpace /> }
+					</Col>
+				</>
+			) }
+			<Col lg={ 6 } md={ 6 }>
+				<h2>{ __( 'Manage your backup files', 'jetpack-backup-pkg' ) }</h2>
+				<p>
+					{ __(
+						'The backup file browser allows you to access, preview and download all your backup files.',
+						'jetpack-backup-pkg'
+					) }
+				</p>
+				<p>
+					<ExternalLink
+						href={ getRedirectUrl( 'jetpack-blog-backup-file-browser' ) }
+						onClick={ trackLearnBackupBrowserClick }
+					>
+						{ __( 'Learn about the file browser', 'jetpack-backup-pkg' ) }
 					</ExternalLink>
 				</p>
 			</Col>
@@ -184,7 +183,7 @@ const BackupSegments = ( hasBackupPlan, connectionLoaded ) => {
 
 const ReviewMessage = connectionLoaded => {
 	const [ restores ] = useRestores( connectionLoaded );
-	const [ backups ] = useBackups( connectionLoaded );
+	const { backups } = useBackupsState();
 	const { tracks } = useAnalytics();
 	let requestReason = '';
 	let reviewText = '';
@@ -294,27 +293,6 @@ const useRestores = connectionLoaded => {
 	return [ restores, setRestores ];
 };
 
-const useBackups = connectionLoaded => {
-	const [ backups, setBackups ] = useState( [] );
-
-	useEffect( () => {
-		if ( ! connectionLoaded ) {
-			setBackups( [] );
-			return;
-		}
-		apiFetch( { path: '/jetpack/v4/backups' } ).then(
-			res => {
-				setBackups( res );
-			},
-			() => {
-				setBackups( [] );
-			}
-		);
-	}, [ setBackups, connectionLoaded ] );
-
-	return [ backups, setBackups ];
-};
-
 const useDismissedReviewRequest = ( connectionLoaded, requestReason, tracksDismissReview ) => {
 	const [ dismissedReview, setDismissedReview ] = useState( true );
 
@@ -361,8 +339,6 @@ const LoadedState = ( {
 	capabilities,
 	isFullyConnected,
 } ) => {
-	const [ , BackupConnectionScreen ] = useConnection();
-
 	if ( ! isFullyConnected ) {
 		return (
 			<Container horizontalSpacing={ 3 } horizontalGap={ 3 }>

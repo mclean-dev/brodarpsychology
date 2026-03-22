@@ -116,16 +116,19 @@
 			// Ensure the item is in the render tree, in its initial state.
 			el.style.removeProperty( 'display' );
 			el.style.opacity = start;
-			el.style.transition = 'opacity 0.2s';
 			el.style.pointerEvents = 'none';
 
-			var finished = function ( e ) {
-				if ( e.target === el && e.propertyName === 'opacity' ) {
-					el.style.removeProperty( 'transition' );
-					el.style.removeProperty( 'opacity' );
+			var animate = function ( t0, duration ) {
+				var t = performance.now();
+				var diff = t - t0;
+				var ratio = diff / duration;
+
+				if ( ratio < 1 ) {
+					el.style.opacity = start + ( end - start ) * ratio;
+					requestAnimationFrame( () => animate( t0, duration ) );
+				} else {
+					el.style.opacity = end;
 					el.style.removeProperty( 'pointer-events' );
-					el.removeEventListener( 'transitionend', finished );
-					el.removeEventListener( 'transitioncancel', finished );
 					callback();
 				}
 			};
@@ -133,22 +136,19 @@
 			requestAnimationFrame( function () {
 				// Double rAF for browser compatibility.
 				requestAnimationFrame( function () {
-					el.addEventListener( 'transitionend', finished );
-					el.addEventListener( 'transitioncancel', finished );
-					// Trigger transition.
-					el.style.opacity = end;
+					animate( performance.now(), 200 );
 				} );
 			} );
 		}
 
 		function fadeIn( el, callback ) {
 			callback = callback || util.noop;
-			fade( el, '0', '1', callback );
+			fade( el, 0, 1, callback );
 		}
 
 		function fadeOut( el, callback ) {
 			callback = callback || util.noop;
-			fade( el, '1', '0', function () {
+			fade( el, 1, 0, function () {
 				if ( el ) {
 					el.style.display = 'none';
 				}
@@ -375,6 +375,12 @@
 					screenPadding = 0;
 				}
 			}
+		}
+
+		function makeGalleryImageAccessible( img ) {
+			img.role = 'button';
+			img.tabIndex = 0;
+			img.ariaLabel = jetpackCarouselStrings.image_label;
 		}
 
 		function initializeCarousel() {
@@ -734,6 +740,8 @@
 				if ( ! valid ) {
 					return;
 				}
+
+				makeGalleryImageAccessible( image );
 
 				// Make this node a gallery recognizable by event listener above.
 				link.classList.add( 'single-image-gallery' );
@@ -1457,6 +1465,11 @@
 				return; // don't run if the default gallery functions weren't used
 			}
 
+			const images = gallery.querySelectorAll( settings.imgSelector );
+			if ( ! images.length ) {
+				return; // don't run if we found no images in the gallery (somehow it has images that aren't in the media library?)
+			}
+
 			initializeCarousel();
 
 			if ( carousel.isOpen ) {
@@ -1493,7 +1506,7 @@
 			carousel.overlay.style.opacity = 1;
 			carousel.overlay.style.display = 'block';
 
-			initCarouselSlides( gallery.querySelectorAll( settings.imgSelector ), settings.startIndex );
+			initCarouselSlides( images, settings.startIndex );
 
 			swiper = new window.Swiper670( '.jp-carousel-swiper-container', {
 				centeredSlides: true,
@@ -1571,8 +1584,75 @@
 			} );
 		}
 
-		// Register the event listener for starting the gallery
-		document.body.addEventListener( 'click', function ( e ) {
+		// Register the event listeners for starting the gallery
+		document.body.addEventListener( 'click', handleInteraction );
+		document.body.addEventListener( 'keydown', handleInteraction );
+		document.querySelectorAll( galleryItemSelector + 'img' ).forEach( function ( galleryImage ) {
+			if ( shouldOpenModal( galleryImage ) ) {
+				makeGalleryImageAccessible( galleryImage );
+			}
+		} );
+
+		function handleInteraction( e ) {
+			if ( e.type === 'click' ) {
+				handleClick( e );
+				return;
+			}
+
+			if ( e.type === 'keydown' ) {
+				const parentElement = document.activeElement.parentElement;
+				const isParentCarouselContainer =
+					parentElement && parentElement.classList.contains( 'tiled-gallery__item' );
+
+				if ( ( e.key === ' ' || e.key === 'Enter' ) && isParentCarouselContainer ) {
+					handleClick( e );
+					return;
+				}
+			}
+		}
+
+		function shouldOpenModal( el ) {
+			var parent = el.parentElement;
+			var grandparent = parent.parentElement;
+
+			// If Gallery is made up of individual Image blocks check for custom link before
+			// loading carousel. The custom link may be the parent or could be a descendant
+			// of the parent if the image has rounded corners.
+			var parentHref = null;
+			if ( grandparent && grandparent.classList.contains( 'wp-block-image' ) ) {
+				parentHref = parent.getAttribute( 'href' );
+			} else if (
+				parent &&
+				parent.classList.contains( 'wp-block-image' ) &&
+				parent.querySelector( ':scope > a' )
+			) {
+				parentHref = parent.querySelector( ':scope > a' ).getAttribute( 'href' );
+			}
+
+			// If the link does not point to the attachment or media file then assume Image has
+			// a custom link so don't load the carousel.
+			if (
+				parentHref &&
+				parentHref.split( '?' )[ 0 ] !== el.getAttribute( 'data-orig-file' ).split( '?' )[ 0 ] &&
+				parentHref !== el.getAttribute( 'data-permalink' )
+			) {
+				return false;
+			}
+
+			// Do not open the modal if we are looking at a gallery caption from before WP5, which may contain a link.
+			if ( parent.classList.contains( 'gallery-caption' ) ) {
+				return false;
+			}
+
+			// Do not open the modal if we are looking at a caption of a gallery block, which may contain a link.
+			if ( domUtil.matches( parent, 'figcaption' ) ) {
+				return false;
+			}
+
+			return true;
+		}
+
+		function handleClick( e ) {
 			var isCompatible =
 				window.CSS && window.CSS.supports && window.CSS.supports( 'display', 'grid' );
 
@@ -1590,41 +1670,7 @@
 					return;
 				}
 
-				var parent = target.parentElement;
-				var grandparent = parent.parentElement;
-
-				// If Gallery is made up of individual Image blocks check for custom link before
-				// loading carousel. The custom link may be the parent or could be a descendant
-				// of the parent if the image has rounded corners.
-				var parentHref = null;
-				if ( grandparent && grandparent.classList.contains( 'wp-block-image' ) ) {
-					parentHref = parent.getAttribute( 'href' );
-				} else if (
-					parent &&
-					parent.classList.contains( 'wp-block-image' ) &&
-					parent.querySelector( ':scope > a' )
-				) {
-					parentHref = parent.querySelector( ':scope > a' ).getAttribute( 'href' );
-				}
-
-				// If the link does not point to the attachment or media file then assume Image has
-				// a custom link so don't load the carousel.
-				if (
-					parentHref &&
-					parentHref.split( '?' )[ 0 ] !==
-						target.getAttribute( 'data-orig-file' ).split( '?' )[ 0 ] &&
-					parentHref !== target.getAttribute( 'data-permalink' )
-				) {
-					return;
-				}
-
-				// Do not open the modal if we are looking at a gallery caption from before WP5, which may contain a link.
-				if ( parent.classList.contains( 'gallery-caption' ) ) {
-					return;
-				}
-
-				// Do not open the modal if we are looking at a caption of a gallery block, which may contain a link.
-				if ( domUtil.matches( parent, 'figcaption' ) ) {
+				if ( ! shouldOpenModal( target ) ) {
 					return;
 				}
 
@@ -1642,7 +1688,7 @@
 				var index = Array.prototype.indexOf.call( gallery.querySelectorAll( itemSelector ), item );
 				loadSwiper( gallery, { startIndex: index } );
 			}
-		} );
+		}
 
 		// Handle lightbox (single image gallery) for images linking to 'Attachment Page'.
 		if ( Number( jetpackCarouselStrings.single_image_gallery ) === 1 ) {

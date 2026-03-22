@@ -1,0 +1,108 @@
+[01-Apr-2024 09:43:29 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[10-Oct-2024 11:38:42 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[29-Oct-2024 18:39:05 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[16-Nov-2024 07:26:22 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[22-Nov-2024 18:27:27 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[30-Nov-2024 22:45:57 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[12-Dec-2024 19:58:45 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[15-Dec-2024 12:20:08 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[17-Dec-2024 07:00:41 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[17-Dec-2024 20:23:20 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[17-Dec-2024 21:12:56 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[18-Dec-2024 08:24:03 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[18-Dec-2024 12:06:48 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[23-Dec-2024 19:03:53 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[23-Dec-2024 21:04:41 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[04-Jan-2025 06:08:39 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[05-Jan-2025 02:22:40 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[05-Jan-2025 12:44:03 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[17-Jan-2025 13:17:37 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[19-Jan-2025 18:32:36 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[21-Jan-2025 10:44:04 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[25-Jan-2025 00:17:55 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[06-Feb-2025 15:45:16 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[08-Feb-2025 22:25:39 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[11-Feb-2025 12:33:16 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[12-Feb-2025 21:24:00 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69
+[22-Mar-2025 05:19:45 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/plugins/hello.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/plugins/hello.php on line 69

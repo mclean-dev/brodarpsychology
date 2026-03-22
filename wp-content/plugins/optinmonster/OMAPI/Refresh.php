@@ -119,7 +119,7 @@ class OMAPI_Refresh {
 			$results     = array_merge( $results, (array) $body );
 
 			// If we've reached the end, prevent any further requests.
-			if ( $page >= $total_pages || $limit === 0 ) {
+			if ( $page >= $total_pages || 0 === $limit ) {
 				break;
 			}
 
@@ -135,7 +135,7 @@ class OMAPI_Refresh {
 			// Store the optin data.
 			$this->base->save->store_optins( $results );
 
-			// Update our sites as well
+			// Update our sites as well.
 			$result = $this->base->sites->fetch( $api_key );
 
 			// Update the option to remove stale error messages.
@@ -162,16 +162,12 @@ class OMAPI_Refresh {
 	 * @since  1.9.10
 	 *
 	 * @param  string $campaign_id The campaign id (slug).
-	 * @param  mixed  $is_legacy   Whether campaign is legacy.
 	 *
 	 * @return WP_Error|bool True if successful.
 	 */
-	public function sync( $campaign_id, $is_legacy = false ) {
+	public function sync( $campaign_id ) {
 		$time = time();
 		$path = "for-wp/{$campaign_id}?t={$time}";
-		if ( $is_legacy ) {
-			$path .= '&legacy=true';
-		}
 
 		$this->api = OMAPI_Api::build( 'v1', $path, 'GET' );
 
@@ -217,7 +213,7 @@ class OMAPI_Refresh {
 			$args['wc'] = OMAPI_WooCommerce::version();
 		}
 
-		$args = array_merge( $args, OMAPI_Api::getUrlArgs() );
+		$args = array_merge( $args, OMAPI_Api::get_url_args() );
 
 		return $args;
 	}

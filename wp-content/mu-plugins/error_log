@@ -1,0 +1,48 @@
+[28-Sep-2024 08:38:30 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[02-Oct-2024 03:52:37 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[03-Oct-2024 19:31:04 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[05-Oct-2024 07:56:58 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[07-Oct-2024 06:32:03 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[09-Oct-2024 02:20:42 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[09-Oct-2024 06:28:59 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:59
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 59
+[03-Nov-2024 15:52:16 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 69
+[04-Nov-2024 16:00:57 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 69
+[17-Nov-2024 11:01:52 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 69
+[10-Feb-2025 03:39:55 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 69
+[17-Mar-2025 21:31:50 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function add_action() in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php:69
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/mu-plugins/sso.php on line 69

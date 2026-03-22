@@ -62,21 +62,35 @@ class Videopress extends Hybrid_Product {
 	public static $has_standalone_plugin = true;
 
 	/**
-	 * Get the internationalized product name
+	 * Whether this product has a free offering
+	 *
+	 * @var bool
+	 */
+	public static $has_free_offering = true;
+
+	/**
+	 * The feature slug that identifies the paid plan
+	 *
+	 * @var string
+	 */
+	public static $feature_identifying_paid_plan = 'videopress';
+
+	/**
+	 * Get the product name
 	 *
 	 * @return string
 	 */
 	public static function get_name() {
-		return __( 'VideoPress', 'jetpack-my-jetpack' );
+		return 'VideoPress';
 	}
 
 	/**
-	 * Get the internationalized product title
+	 * Get the product title
 	 *
 	 * @return string
 	 */
 	public static function get_title() {
-		return __( 'Jetpack VideoPress', 'jetpack-my-jetpack' );
+		return 'Jetpack VideoPress';
 	}
 
 	/**
@@ -85,7 +99,7 @@ class Videopress extends Hybrid_Product {
 	 * @return string
 	 */
 	public static function get_description() {
-		return __( 'High quality, ad-free video', 'jetpack-my-jetpack' );
+		return __( 'Stunning-quality, ad-free video in the WordPress Editor', 'jetpack-my-jetpack' );
 	}
 
 	/**
@@ -94,7 +108,7 @@ class Videopress extends Hybrid_Product {
 	 * @return string
 	 */
 	public static function get_long_description() {
-		return __( 'High-quality, ad-free video built specifically for WordPress.', 'jetpack-my-jetpack' );
+		return __( 'Stunning-quality, ad-free video in the WordPress Editor', 'jetpack-my-jetpack' );
 	}
 
 	/**
@@ -124,6 +138,15 @@ class Videopress extends Hybrid_Product {
 			),
 			Wpcom_Products::get_product_pricing( static::get_wpcom_product_slug() )
 		);
+	}
+
+	/**
+	 * Get the URL the user is taken after purchasing the product through the checkout
+	 *
+	 * @return ?string
+	 */
+	public static function get_post_checkout_url() {
+		return self::get_manage_url();
 	}
 
 	/**
@@ -157,4 +180,26 @@ class Videopress extends Hybrid_Product {
 		}
 	}
 
+	/**
+	 * Get the product-slugs of the paid plans for this product (not including bundles)
+	 *
+	 * @return array
+	 */
+	public static function get_paid_plan_product_slugs() {
+		return array(
+			'jetpack_videopress',
+			'jetpack_videopress_monthly',
+			'jetpack_videopress_bi_yearly',
+		);
+	}
+
+	/**
+	 * Return product bundles list
+	 * that supports the product.
+	 *
+	 * @return boolean|array Products bundle list.
+	 */
+	public static function is_upgradable_by_bundle() {
+		return array( 'complete' );
+	}
 }

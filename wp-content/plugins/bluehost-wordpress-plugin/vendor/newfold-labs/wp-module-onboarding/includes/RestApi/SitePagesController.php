@@ -5,13 +5,12 @@ namespace NewfoldLabs\WP\Module\Onboarding\RestApi;
 use NewfoldLabs\WP\Module\Onboarding\Permissions;
 use NewfoldLabs\WP\Module\Onboarding\Data\Options;
 use NewfoldLabs\WP\Module\Onboarding\Data\Patterns;
+use NewfoldLabs\WP\Module\Onboarding\Data\Services\WonderBlocksService;
 
 /**
  * Class SitePagesController
  */
 class SitePagesController {
-
-
 	/**
 	 * The namespace of this controller's route.
 	 *
@@ -53,7 +52,7 @@ class SitePagesController {
 		if ( false === $flow_data_option || ! isset( $flow_data_option['data'] ) ) {
 			return new \WP_Error(
 				'nfd_onboarding_error',
-				'Flow data does not exist to generate a child theme.',
+				'Flow data does not exist to publish site pages',
 				array( 'status' => 500 )
 			);
 		}
@@ -104,15 +103,19 @@ class SitePagesController {
 			\update_option( Options::get_option_name( 'show_on_front', false ), 'page' );
 		}
 
-		$post_id = $this->publish_page( 'Homepage', $pattern_data['content'], true, $pattern_data['meta'] );
+		$post_id = $this->publish_page( __( 'Home', 'wp-module-onboarding' ), $pattern_data['content'], true, $pattern_data['meta'] );
+
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
 		}
 
 		\update_option( Options::get_option_name( 'page_on_front', false ), $post_id );
 
-		return true;
+		if ( WonderBlocksService::is_valid_slug( $homepage_pattern_slug ) ) {
+			WonderBlocksService::delete_templates_cache_from_slug( $homepage_pattern_slug );
+		}
 
+		return true;
 	}
 
 	/**
@@ -139,6 +142,10 @@ class SitePagesController {
 			$page_data = $this->publish_page( $site_page['title'], $pattern_data['content'], false, $pattern_data['meta'] );
 			if ( is_wp_error( $page_data ) ) {
 				return $page_data;
+			}
+
+			if ( WonderBlocksService::is_valid_slug( $site_page['slug'] ) ) {
+				WonderBlocksService::delete_templates_cache_from_slug( $site_page['slug'] );
 			}
 		}
 		return true;

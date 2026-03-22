@@ -2,8 +2,10 @@
 
 namespace WPForms\Integrations\Stripe\Admin;
 
+use WPForms\Integrations\Stripe\Api\DomainManager;
+use WPForms\Integrations\Stripe\Api\WebhooksManager;
 use WPForms\Integrations\Stripe\Helpers;
-use Stripe\Account;
+use WPForms\Vendor\Stripe\Account;
 
 /**
  * Stripe Connect functionality.
@@ -29,6 +31,24 @@ class Connect {
 	protected $accounts = [];
 
 	/**
+	 * Webhooks manager.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @var WebhooksManager
+	 */
+	private $webhooks_manager;
+
+	/**
+	 * Domain manager.
+	 *
+	 * @since 1.8.6
+	 *
+	 * @var DomainManager
+	 */
+	private $domain_manager;
+
+	/**
 	 * Initialize.
 	 *
 	 * @since 1.8.2
@@ -36,6 +56,9 @@ class Connect {
 	 * @return Connect
 	 */
 	public function init() {
+
+		$this->webhooks_manager = new WebhooksManager();
+		$this->domain_manager   = new DomainManager();
 
 		$this->hooks();
 
@@ -57,9 +80,9 @@ class Connect {
 	 *
 	 * @since 1.8.2
 	 */
-	public function handle_oauth_handshake() {
+	public function handle_oauth_handshake(): void {
 
-		if ( ! wpforms_current_user_can() || ! isset( $_GET['stripe_connect'] ) || $_GET['stripe_connect'] !== 'complete' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! $this->is_valid_handshake_request() ) {
 			return;
 		}
 
@@ -79,17 +102,45 @@ class Connect {
 		$mode = empty( $credentials['live_mode'] ) ? 'test' : 'live';
 
 		$this->set_connected_user_id( $credentials['stripe_user_id'], $mode );
+		$this->set_current_mode( $mode );
+
+		// In case of switching accounts existing account data needs to be cleared.
+		unset( $this->accounts[ $mode ] );
 
 		Helpers::set_stripe_key( $credentials['stripe_publishable_key'], 'publishable', $mode );
 		Helpers::set_stripe_key( $credentials['access_token'], 'secret', $mode );
 
 		$this->update_account_meta( $credentials['stripe_user_id'], $mode );
 		$this->set_connected_account_country( $mode );
+		$this->webhooks_manager->connect();
+		$this->domain_manager->validate();
 
 		$settings_url = $this->get_payments_settings_url();
 
 		wp_safe_redirect( $settings_url );
 		exit;
+	}
+
+	/**
+	 * Validates if the current handshake request is valid.
+	 *
+	 * @since 1.9.5
+	 */
+	private function is_valid_handshake_request(): bool {
+
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'wpforms_stripe_connect' ) ) {
+			return false;
+		}
+
+		if ( ! isset( $_GET['stripe_connect'] ) || $_GET['stripe_connect'] !== 'complete' ) {
+			return false;
+		}
+
+		if ( ! wpforms_current_user_can() ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -156,7 +207,7 @@ class Connect {
 	 * @param string $account_id Account ID.
 	 * @param string $mode       Stripe mode (e.g. 'live' or 'test').
 	 */
-	public function update_account_meta( $account_id = '', $mode = '' ) {
+	public function update_account_meta( $account_id = '', $mode = '' ) { // phpcs:ignore Generic.Metrics.CyclomaticComplexity.TooHigh
 
 		if ( ! $mode ) {
 			$mode = Helpers::get_stripe_mode();
@@ -336,6 +387,22 @@ class Connect {
 	}
 
 	/**
+	 * Set Stripe mode.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param string $mode Stripe mode (e.g. 'live' or 'test').
+	 */
+	private function set_current_mode( $mode ) {
+
+		$key              = 'stripe-test-mode';
+		$settings         = (array) get_option( 'wpforms_settings', [] );
+		$settings[ $key ] = $mode === 'test';
+
+		update_option( 'wpforms_settings', $settings );
+	}
+
+	/**
 	 * Set Stripe Account country.
 	 *
 	 * @since 1.8.2
@@ -385,12 +452,13 @@ class Connect {
 	 *
 	 * @return string
 	 */
-	private function get_payments_settings_url() {
+	private function get_payments_settings_url(): string {
 
 		return add_query_arg(
 			[
-				'page' => 'wpforms-settings',
-				'view' => 'payments',
+				'page'     => 'wpforms-settings',
+				'view'     => 'payments',
+				'_wpnonce' => wp_create_nonce( 'wpforms_stripe_connect' ),
 			],
 			admin_url( 'admin.php' )
 		);

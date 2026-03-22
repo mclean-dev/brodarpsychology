@@ -18,14 +18,14 @@ class StagingApi extends \WP_REST_Controller {
 	protected $namespace = 'newfold-staging/v1';
 
 	/**
-	 * An instance of the BluehostStaging class.
+	 * An instance of the Staging class.
 	 *
 	 * @var Staging
 	 */
 	protected $staging;
 
 	/**
-	 * Bluehost_Staging_Controller constructor.
+	 * Staging_Controller constructor.
 	 *
 	 * @param Container $container An instance of the Container class.
 	 */
@@ -114,7 +114,6 @@ class StagingApi extends \WP_REST_Controller {
 				),
 			)
 		);
-
 	}
 
 	/**
@@ -132,6 +131,7 @@ class StagingApi extends \WP_REST_Controller {
 	 * @return \WP_REST_Response
 	 */
 	public function createStaging() {
+
 		$payload = $this->staging->createStaging();
 		if ( ! is_wp_error( $payload ) ) {
 			$this->staging->getConfig( false );

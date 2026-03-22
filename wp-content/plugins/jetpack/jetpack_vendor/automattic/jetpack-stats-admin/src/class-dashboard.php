@@ -56,12 +56,11 @@ class Dashboard {
 	 */
 	public function add_wp_admin_submenu() {
 		$page_suffix = Admin_Menu::add_menu(
-			__( 'Stats App', 'jetpack-stats-admin' ),
-			_x( 'Stats App', 'product name shown in menu', 'jetpack-stats-admin' ),
+			__( 'Stats', 'jetpack-stats-admin' ),
+			_x( 'Stats', 'product name shown in menu', 'jetpack-stats-admin' ),
 			'manage_options',
-			'jetpack-stats-app',
-			array( $this, 'render' ),
-			100
+			'stats',
+			array( $this, 'render' )
 		);
 
 		if ( $page_suffix ) {

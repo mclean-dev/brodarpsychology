@@ -80,8 +80,16 @@ class PluginsController {
 				continue;
 			}
 			$status = 'need_to_install';
-			if ( file_exists( WP_PLUGIN_DIR . '/' . $info['file'] ) ) {
-				$active = \is_plugin_active( $info['file'] );
+			if (
+				(isset($info['file_extended']) && file_exists(WP_PLUGIN_DIR . '/' . $info['file_extended'])) ||
+				(isset($info['file_premium']) && file_exists(WP_PLUGIN_DIR . '/' . $info['file_premium'])) ||
+				file_exists(WP_PLUGIN_DIR . '/' . $info['file'])
+			){
+				$active = (
+					(isset($info['file_extended']) && \is_plugin_active($info['file_extended'])) ||
+					(isset($info['file_premium']) && \is_plugin_active($info['file_premium'])) ||
+					\is_plugin_active($info['file'])
+				);
 				if ( $active ) {
 					$status = 'active';
 				} else {
@@ -95,8 +103,9 @@ class PluginsController {
 		}
 		$plugins_queue = array_column( $this->get_plugin_queue(), 'slug' );
 		$plugin_being_installed = \get_option( InstallerOptions::get_option_name( 'plugins_init_status' ), false);
-		if ($plugin_being_installed !== false && $plugin_being_installed !== 'completed') {
-			$plugins_queue[] = $plugin_being_installed;
+		$plugin_being_installed_queue = \get_option( InstallerOptions::get_option_name( 'plugin_install_queue' ), array());
+    if ($plugin_being_installed !== false && $plugin_being_installed !== 'completed') {
+      $plugins_queue[] = $plugin_being_installed_queue;
 		}
 		return new \WP_REST_Response(
 			array(

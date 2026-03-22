@@ -52,6 +52,7 @@ class NotificationsApi {
 						'validate_callback' => function ( $value ) {
 							return is_string( $value ) && in_array( $value, array(
 									container()->plugin()->id . '-plugin',
+									container()->plugin()->id . '-app-nav',
 									'wp-admin-notice',
 									'wp-admin-prime'
 								), true );
@@ -61,7 +62,7 @@ class NotificationsApi {
 						'required'          => false,
 						'validate_callback' => function ( $value, \WP_REST_Request $request ) {
 							$context = $request->get_param( 'context' );
-							if ( container()->plugin()->id . '-plugin' === $context || 'wp-admin-notice' === $context ) {
+							if ( container()->plugin()->id . '-plugin' === $context || container()->plugin()->id . '-app-nav' === $context || 'wp-admin-notice' === $context ) {
 								return is_string( $value );
 							}
 
@@ -84,7 +85,7 @@ class NotificationsApi {
 				'args'                => array(
 					'action'   => array(
 						'required'          => true,
-						'description'       => __( 'Event action', 'newfold-module-notifications' ),
+						'description'       => __( 'Event action', 'wp-module-notifications' ),
 						'type'              => 'string',
 						'sanitize_callback' => function ( $value ) {
 							return sanitize_title( $value );
@@ -92,19 +93,19 @@ class NotificationsApi {
 					),
 					'category' => array(
 						'default'           => 'admin',
-						'description'       => __( 'Event category', 'newfold-module-notifications' ),
+						'description'       => __( 'Event category', 'wp-module-notifications' ),
 						'type'              => 'string',
 						'sanitize_callback' => function ( $value ) {
 							return sanitize_title( $value );
 						},
 					),
 					'data'     => array(
-						'description' => __( 'Event data', 'newfold-module-notifications' ),
+						'description' => __( 'Event data', 'wp-module-notifications' ),
 						'type'        => 'object',
 					),
 					'queue'    => array(
 						'default'           => true,
-						'description'       => __( 'Whether or not to queue the event', 'newfold-module-notifications' ),
+						'description'       => __( 'Whether or not to queue the event', 'wp-module-notifications' ),
 						'type'              => 'boolean',
 						'sanitize_callback' => function ( $value ) {
 							return filter_var( $value, FILTER_VALIDATE_BOOLEAN );

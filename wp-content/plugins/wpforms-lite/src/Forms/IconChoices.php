@@ -4,7 +4,7 @@ namespace WPForms\Forms;
 
 use WPForms\Helpers\PluginSilentUpgrader;
 use WPForms_Builder;
-use WPForms_Install_Skin;
+use WP_Ajax_Upgrader_Skin;
 
 /**
  * Icon Choices functionality.
@@ -29,7 +29,7 @@ class IconChoices {
 	 *
 	 * @var string
 	 */
-	const FONT_AWESOME_VERSION = '6.2.1';
+	const FONT_AWESOME_VERSION = '6.4.0';
 
 	/**
 	 * Default icon.
@@ -172,6 +172,18 @@ class IconChoices {
 	}
 
 	/**
+	 * Get Font Awesome library data file.
+	 *
+	 * @since 1.8.3
+	 *
+	 * @return string
+	 */
+	public function get_icons_data_file() {
+
+		return $this->icons_data_file;
+	}
+
+	/**
 	 * Whether Font Awesome library is already installed or not.
 	 *
 	 * @since 1.7.9
@@ -204,34 +216,53 @@ class IconChoices {
 	}
 
 	/**
-	 * Install Font Awesome library from our server.
+	 * Install Font Awesome library via Ajax.
 	 *
 	 * @since 1.7.9
 	 */
-	public function install() { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
+	public function install() {
 
+		// Run a security check.
 		check_ajax_referer( 'wpforms-builder', 'nonce' );
+
+		// Check for permissions.
+		if ( ! wpforms_current_user_can( 'edit_forms' ) ) {
+			wp_send_json_error();
+		}
+
+		$this->run_install( $this->cache_base_path );
+		$this->is_installed = true;
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * Run Install Font Awesome library from our server.
+	 *
+	 * @since 1.8.3
+	 *
+	 * @param string $destination Destination path.
+	 */
+	public function run_install( $destination ) { // phpcs:ignore WPForms.PHP.HooksMethod.InvalidPlaceForAddingHooks
 
 		// WordPress assumes it's a plugin/theme and tries to get translations. We don't need that, and it breaks JS output.
 		remove_action( 'upgrader_process_complete', [ 'Language_Pack_Upgrader', 'async_upgrade' ], 20 );
 
-		require_once WPFORMS_PLUGIN_DIR . 'includes/admin/class-install-skin.php';
+		if ( ! function_exists( 'request_filesystem_credentials' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/file.php';
+		}
 
 		// Create the Upgrader with our custom skin that reports errors as WP JSON.
-		$installer = new PluginSilentUpgrader( new WPForms_Install_Skin() );
+		$installer = new PluginSilentUpgrader( new WP_Ajax_Upgrader_Skin() );
 
 		// The installer skin reports any errors via wp_send_json_error() with generic error messages.
 		$installer->init();
 		$installer->run(
 			[
 				'package'     => self::FONT_AWESOME_URL,
-				'destination' => $this->cache_base_path,
+				'destination' => $destination,
 			]
 		);
-
-		$this->is_installed = true;
-
-		wp_send_json_success();
 	}
 
 	/**
@@ -333,6 +364,10 @@ class IconChoices {
 		// Only Payment fields supply a custom label.
 		if ( ! $label ) {
 			$label = $choice['label']['text'];
+		}
+
+		if ( is_array( $choice['label']['class'] ) && wpforms_is_empty_string( $label ) ) {
+			$choice['label']['class'][] = 'wpforms-field-label-inline-empty';
 		}
 
 		printf(
@@ -507,28 +542,40 @@ class IconChoices {
 	/**
 	 * Get an SVG icon code from a file for inline output in HTML.
 	 *
-	 * Note: the output does not need escaping.
+	 * Note: the output does not need to escape.
 	 *
 	 * @since 1.7.9
 	 *
-	 * @param string $icon  Font Awesome icon name.
-	 * @param string $style Font Awesome style (solid, brands).
-	 * @param int    $size  Icon display size.
+	 * @param string     $icon  Font Awesome icon name.
+	 * @param string     $style Font Awesome style (solid, brands).
+	 * @param string|int $size  Icon display size.
 	 *
 	 * @return string
 	 */
-	private function get_icon( $icon, $style, $size ) {
+	private function get_icon( string $icon, string $style, $size ): string {
 
-		$icon_sizes = $this->get_icon_sizes();
-		$filename   = realpath( "{$this->cache_base_path}/svgs/{$style}/{$icon}.svg" );
+		// Sanitize inputs.
+		$icon  = sanitize_key( $icon );
+		$style = sanitize_key( $style );
+		$size  = sanitize_key( (string) $size );
 
-		if ( ! $filename || ! is_file( $filename ) || ! is_readable( $filename ) ) {
+		$icon_sizes  = $this->get_icon_sizes();
+		$filename    = wp_normalize_path( (string) realpath( "{$this->cache_base_path}/svgs/{$style}/{$icon}.svg" ) );
+		$allowed_dir = wp_normalize_path( (string) realpath( $this->cache_base_path . '/svgs' ) );
+
+		// Verify the file is within the allowed directory.
+		if ( strpos( $filename, $allowed_dir ) !== 0 ) {
 			return '';
 		}
 
-		$svg = file_get_contents( $filename );
+		if ( ! is_file( $filename ) || ! is_readable( $filename ) ) {
+			return '';
+		}
 
-		if ( ! $svg ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$svg = (string) file_get_contents( $filename );
+
+		if ( strpos( $svg, '<svg' ) === false ) {
 			return '';
 		}
 
@@ -551,6 +598,7 @@ class IconChoices {
 			return [];
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 		$icons = file_get_contents( $this->icons_data_file );
 
 		if ( ! $icons ) {

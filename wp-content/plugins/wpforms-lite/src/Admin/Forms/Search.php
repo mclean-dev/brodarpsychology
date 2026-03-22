@@ -88,24 +88,6 @@ class Search {
 	}
 
 	/**
-	 * Count search results.
-	 *
-	 * @since 1.7.2
-	 * @deprecated 1.7.5
-	 *
-	 * @param array $count Number of forms in different views.
-	 * @param array $args  Get forms arguments.
-	 *
-	 * @return array
-	 */
-	public function update_count( $count, $args ) {
-
-		_deprecated_function( __METHOD__, '1.7.5 of the WPForms plugin', "wpforms()->get( 'forms_views' )->update_count()" );
-
-		return wpforms()->get( 'forms_views' )->update_count();
-	}
-
-	/**
 	 * Pass the search term to the arguments array.
 	 *
 	 * @since 1.7.2
@@ -116,8 +98,12 @@ class Search {
 	 */
 	public function get_forms_args( $args ) {
 
-		$args['search']['term']         = $this->term;
-		$args['search']['term_escaped'] = $this->term_escaped;
+		if ( is_numeric( $this->term ) ) {
+			$args['post__in'] = [ absint( $this->term ) ];
+		} else {
+			$args['search']['term']         = $this->term;
+			$args['search']['term_escaped'] = $this->term_escaped;
+		}
 
 		return $args;
 	}
@@ -165,6 +151,10 @@ class Search {
 	 */
 	public function search_by_term_where( $where, $wp_query ) {
 
+		if ( is_numeric( $this->term ) ) {
+			return $where;
+		}
+
 		global $wpdb;
 
 		// When user types only HTML tag (<section> for example), the sanitized term we will be empty.
@@ -180,8 +170,8 @@ class Search {
 		// Prepare the WHERE clause to search form title and description.
 		$where .= $wpdb->prepare(
 			" AND (
-				{$wpdb->posts}.post_title LIKE %s OR
-				{$wpdb->posts}.post_excerpt LIKE %s
+				$wpdb->posts.post_title LIKE %s OR
+				$wpdb->posts.post_excerpt LIKE %s
 			)",
 			'%' . $wpdb->esc_like( esc_html( $this->term ) ) . '%',
 			'%' . $wpdb->esc_like( $this->term ) . '%'
@@ -231,7 +221,7 @@ class Search {
 			return;
 		}
 
-		$views = wpforms()->get( 'forms_views' );
+		$views = wpforms()->obj( 'forms_views' );
 		$count = $views->get_count();
 		$view  = $views->get_current_view();
 

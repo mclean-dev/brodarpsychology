@@ -32,6 +32,11 @@ class NotificationsRepository {
 	 */
 	public function __construct( $fetch_notices = true ) {
 
+		// If there is no Hiive connection, bail.
+		if(! HiiveConnection::is_connected()) {
+			return;
+		}
+
 		$notifications = get_transient( self::TRANSIENT );
 		
 		// load test data TODO REMOVE
@@ -60,7 +65,7 @@ class NotificationsRepository {
 			wp_enqueue_script(
 				'newfold-notices-primer',
 				plugins_url( 'vendor/newfold-labs/wp-module-notifications/assets/js/prime-notices.js', container()->plugin()->file ),
-				array( 'wp-dom-ready', 'wp-api-fetch' ),
+				array( 'wp-dom-ready', 'wp-api-fetch', 'nfd-runtime' ),
 				container()->plugin()->version,
 				true
 			);
@@ -100,7 +105,7 @@ class NotificationsRepository {
 					'pages'   => '#/help',
 				]
 			],
-			'expiration' => 1649860279240,
+			'expiration' => 1749860279240,
 			'content'    => '<div class="notice notice-warning"><p>Here is a plugin notice it should display on home and help screen only! <a data-action="close">x</a></p></div>',
 		];
 		$results[] = [
@@ -141,7 +146,7 @@ class NotificationsRepository {
 			'locations' => [
 				[
 					'pages' => ["#/marketplace/services"],
-					'context' => "web-plugin"
+					'context' => container()->plugin()->id . "-plugin"
 				],
 				[
 					'pages' => 'index.php',

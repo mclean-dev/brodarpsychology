@@ -3,8 +3,12 @@ namespace NewfoldLabs\WP\Module\Onboarding;
 
 use NewfoldLabs\WP\Module\Onboarding\Compatibility\Status;
 use NewfoldLabs\WP\Module\Onboarding\RestApi\RestApi;
+use NewfoldLabs\WP\Module\Onboarding\Services\PluginService;
 use NewfoldLabs\WP\ModuleLoader\Container;
 use NewfoldLabs\WP\Module\Onboarding\Data\Options;
+use NewfoldLabs\WP\Module\Onboarding\Services\StatusService;
+use NewfoldLabs\WP\Module\Onboarding\Services\EventService;
+
 use function NewfoldLabs\WP\ModuleLoader\container;
 
 /**
@@ -61,14 +65,20 @@ final class Application {
 			array( LoginRedirect::class, 'remove_handle_redirect_action' )
 		);
 
-		new RestAPI();
-
 		if ( defined( '\\WP_CLI' ) && \WP_CLI ) {
 			new WP_CLI();
 		}
 
-		if ( Permissions::is_authorized_admin() ) {
+		if ( Permissions::is_authorized_admin() || Permissions::rest_is_authorized_admin() ) {
+			new RestApi();
 			new WP_Admin();
+			new ExternalRedirectInterceptor();
+		}
+
+		if ( Permissions::is_authorized_admin() ) {
+			StatusService::track();
+			// Initialize event tracking for database option changes
+			EventService::init();
 		}
 
 		\do_action( 'nfd_module_onboarding_post_init' );

@@ -46,18 +46,6 @@ class RemoteRequest {
 			return;
 		}
 
-		// Some special cases for library development.
-		$this->base_url = 'https://patterns.hiive.cloud'; // @todo
-
-		$this->data = array(
-			'wp_language'       => \get_locale(),
-			'wp_theme'          => \get_option( 'template' ),
-			// 'mode' => Config::$environment,
-			// 'uuid' => User::data('uuid'),
-			// 'library_version' => Config::$version,
-			'wp_active_plugins' => $request->get_method() === 'POST' ? \get_option( 'active_plugins' ) : array(),
-		);
-
 		$this->headers = array(
 			'Accept'     => 'application/json',
 			'referer'    => $request->get_header( 'referer' ),
@@ -90,6 +78,19 @@ class RemoteRequest {
 		);
 		if ( \is_wp_error( $response ) ) {
 			return $response;
+		}
+
+		// Check for other errors
+		$status_code = \wp_remote_retrieve_response_code( $response );
+
+		if ( $status_code < 200 || $status_code >= 300 ) {
+			return new \WP_Error(
+				'remote_request_error',
+				\wp_remote_retrieve_response_message( $response ),
+				array(
+					'status_code' => $status_code,
+				)
+			);
 		}
 
 		$response_body = \wp_remote_retrieve_body( $response );

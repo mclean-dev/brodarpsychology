@@ -47,7 +47,7 @@ class Util {
 
 		$patterns = array(
 			'contact-form'      => array(
-				'title'      => 'Contact Form',
+				'title'      => __( 'Contact Form', 'jetpack-forms' ),
 				'blockTypes' => array( 'jetpack/contact-form' ),
 				'categories' => array( $category_slug ),
 				'content'    => '<!-- wp:jetpack/contact-form {"style":{"spacing":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}} -->
@@ -60,7 +60,7 @@ class Util {
                     <!-- /wp:jetpack/contact-form -->',
 			),
 			'newsletter-form'   => array(
-				'title'      => 'Newsletter Subscription Form',
+				'title'      => __( 'Lead Capture Form', 'jetpack-forms' ),
 				'blockTypes' => array( 'jetpack/contact-form' ),
 				'categories' => array( $category_slug ),
 				'content'    => '<!-- wp:jetpack/contact-form {"style":{"spacing":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}} -->
@@ -73,7 +73,7 @@ class Util {
                     <!-- /wp:jetpack/contact-form -->',
 			),
 			'rsvp-form'         => array(
-				'title'      => 'RSVP Form',
+				'title'      => __( 'RSVP Form', 'jetpack-forms' ),
 				'blockTypes' => array( 'jetpack/contact-form' ),
 				'categories' => array( $category_slug ),
 				'content'    => '<!-- wp:jetpack/contact-form {"subject":"A new RSVP from your website","style":{"spacing":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}} -->
@@ -87,7 +87,7 @@ class Util {
                     <!-- /wp:jetpack/contact-form -->',
 			),
 			'registration-form' => array(
-				'title'      => 'Registration Form',
+				'title'      => __( 'Registration Form', 'jetpack-forms' ),
 				'blockTypes' => array( 'jetpack/contact-form' ),
 				'categories' => array( $category_slug ),
 				'content'    => '<!-- wp:jetpack/contact-form {"subject":"A new registration from your website","style":{"spacing":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}} -->
@@ -102,7 +102,7 @@ class Util {
                     <!-- /wp:jetpack/contact-form -->',
 			),
 			'appointment-form'  => array(
-				'title'      => 'Appointment Form',
+				'title'      => __( 'Appointment Form', 'jetpack-forms' ),
 				'blockTypes' => array( 'jetpack/contact-form' ),
 				'categories' => array( $category_slug ),
 				'content'    => '<!-- wp:jetpack/contact-form {"subject":"A new appointment booked from your website","style":{"spacing":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}} -->
@@ -118,7 +118,7 @@ class Util {
                     <!-- /wp:jetpack/contact-form -->',
 			),
 			'feedback-form'     => array(
-				'title'      => 'Feedback Form',
+				'title'      => __( 'Feedback Form', 'jetpack-forms' ),
 				'blockTypes' => array( 'jetpack/contact-form' ),
 				'categories' => array( $category_slug ),
 				'content'    => '<!-- wp:jetpack/contact-form {"subject":"New feedback received from your website","style":{"spacing":{"padding":{"top":"16px","right":"16px","bottom":"16px","left":"16px"}}}} -->
@@ -167,7 +167,7 @@ class Util {
 	 * Sets the $grunion_block_template_part_id global.
 	 *
 	 * This is part of the fix for Contact Form Blocks added to FSE _template parts_ (e.g footer).
-	 * The global is processed in Grunion_Contact_Form::parse().
+	 * The global is processed in Contact_Form::parse().
 	 *
 	 * @param string $template_part_id ID for the currently rendered template part.
 	 */
@@ -193,9 +193,9 @@ class Util {
 	/**
 	 * Sets the 'widget' attribute on all instances of the contact form in the widget block.
 	 *
-	 * @param string          $content  Existing widget block content.
-	 * @param array           $instance Array of settings for the current widget.
-	 * @param WP_Widget_Block $widget   Current Block widget instance.
+	 * @param string           $content  Existing widget block content.
+	 * @param array            $instance Array of settings for the current widget.
+	 * @param \WP_Widget_Block $widget   Current Block widget instance.
 	 * @return string
 	 */
 	public static function grunion_contact_form_filter_widget_block_content( $content, $instance, $widget ) {

@@ -5,13 +5,16 @@
  * @package automattic/jetpack
  */
 
-use Automattic\Jetpack\Connection\Client;
-use Automattic\Jetpack\Connection\Manager;
+// Ensure WPCOM_REST_API_Proxy_Request_Trait is present.
+require_once __DIR__ . '/trait-wpcom-rest-api-proxy-request-trait.php';
 
 /**
  * REST API endpoint wpcom/v3/sites/%s/blogging-prompts.
  */
 class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controller {
+
+	use WPCOM_REST_API_Proxy_Request_Trait;
+
 	const TEMPLATE_BLOG_ID = 205876834;
 
 	/**
@@ -42,7 +45,9 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 	 */
 	public function __construct() {
 		$this->post_type                       = 'post';
-		$this->namespace                       = 'wpcom/v3';
+		$this->base_api_path                   = 'wpcom';
+		$this->version                         = 'v3';
+		$this->namespace                       = $this->base_api_path . '/' . $this->version;
 		$this->rest_base                       = 'blogging-prompts';
 		$this->wpcom_is_wpcom_only_endpoint    = true;
 		$this->wpcom_is_site_specific_endpoint = true;
@@ -99,7 +104,7 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 	 */
 	public function get_items( $request ) {
 		if ( ! $this->is_wpcom ) {
-			return $this->proxy_request_to_wpcom( $request );
+			return $this->proxy_request_to_wpcom( $request, '', 'user', true );
 		}
 
 		if ( $request->get_param( 'force_year' ) ) {
@@ -125,7 +130,11 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 	 */
 	public function get_item( $request ) {
 		if ( ! $this->is_wpcom ) {
-			return $this->proxy_request_to_wpcom( $request, $request->get_param( 'id' ) );
+			return $this->proxy_request_to_wpcom( $request, $request->get_param( 'id' ), 'user', true );
+		}
+
+		if ( $request->get_param( 'force_year' ) ) {
+			$this->force_year = $request->get_param( 'force_year' );
 		}
 
 		switch_to_blog( self::TEMPLATE_BLOG_ID );
@@ -164,7 +173,7 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 
 			// If using a "year-less" date, e.g. `--03-16`, override the date_query, and prepare to modify sql manually.
 			// `after` should be a date string when making API requests, rather than an array.
-			if ( is_string( $date_query['after'] ) && 0 === strpos( $date_query['after'], '-' ) ) {
+			if ( is_string( $date_query['after'] ) && str_starts_with( $date_query['after'], '-' ) ) {
 				$date = date_create_from_format( '--m-d', $date_query['after'] );
 
 				if ( false !== $date ) {
@@ -193,7 +202,8 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 			$year = $this->force_year ? $this->force_year : wp_date( 'Y' );
 
 			// Grab the current sort order, `ASC` or `DESC`, so we can reuse it.
-			$order = end( explode( ' ', $clauses['orderby'] ) );
+			$exploded = explode( ' ', $clauses['orderby'] );
+			$order    = end( $exploded );
 
 			// Calculate the day of year for each prompt, from 1 to 366, but use the current year so that prompts published
 			// during leap years have the correct day for non-leap years.
@@ -271,7 +281,11 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 		}
 
 		if ( rest_is_field_included( 'label', $fields ) ) {
-			$data['label'] = __( 'Daily writing prompt', 'jetpack' );
+			if ( $this->is_in_bloganuary( $prompt->post_date_gmt ) ) {
+				$data['label'] = __( 'Bloganuary writing prompt', 'jetpack' );
+			} else {
+				$data['label'] = __( 'Daily writing prompt', 'jetpack' );
+			}
 		}
 
 		if ( rest_is_field_included( 'text', $fields ) ) {
@@ -299,14 +313,48 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 		}
 
 		if ( rest_is_field_included( 'answered_link', $fields ) ) {
-			$data['answered_link'] = esc_url( "https://wordpress.com/tag/dailyprompt-{$prompt->ID}" );
+			if ( $this->is_in_bloganuary( $prompt->post_date_gmt ) ) {
+				$bloganuary_id         = $this->get_bloganuary_id( $prompt->post_date_gmt );
+				$data['answered_link'] = esc_url( "https://wordpress.com/tag/{$bloganuary_id}" );
+			} else {
+				$data['answered_link'] = esc_url( "https://wordpress.com/tag/dailyprompt-{$prompt->ID}" );
+			}
 		}
 
 		if ( rest_is_field_included( 'answered_link_text', $fields ) ) {
 			$data['answered_link_text'] = __( 'View all responses', 'jetpack' );
 		}
 
+		if ( $this->is_in_bloganuary( $prompt->post_date_gmt ) && rest_is_field_included( 'bloganuary_id', $fields ) ) {
+			$data['bloganuary_id'] = $this->get_bloganuary_id( $prompt->post_date_gmt );
+		}
+
 		return $data;
+	}
+
+	/**
+	 * Return true if the post is in "Bloganuary"
+	 *
+	 * @param string $post_date_gmt Post date in GMT.
+	 * @return bool True if the post is in "Bloganuary".
+	 */
+	protected function is_in_bloganuary( $post_date_gmt ) {
+		$post_month = gmdate( 'm', strtotime( $post_date_gmt ) );
+		return $post_month === '01';
+	}
+
+	/**
+	 * Return the bloganuary id of the form `bloganuary-yyyy-dd`
+	 *
+	 * @param string $post_date_gmt Post date in GMT.
+	 * @return string Bloganuary id.
+	 */
+	protected function get_bloganuary_id( $post_date_gmt ) {
+		$post_year_day = gmdate( 'Y-d', strtotime( $post_date_gmt ) );
+		if ( $this->force_year ) {
+			$post_year_day = $this->force_year . '-' . gmdate( 'd', strtotime( $post_date_gmt ) );
+		}
+		return 'bloganuary-' . $post_year_day;
 	}
 
 	/**
@@ -347,7 +395,7 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 				'type'              => 'string',
 				'validate_callback' => function ( $param ) {
 					// Allow month and day without year, e.g. `--02-28`
-					if ( strpos( $param, '-' ) === 0 ) {
+					if ( str_starts_with( $param, '-' ) ) {
 						return false !== date_create_from_format( '--m-d', $param );
 					}
 
@@ -444,6 +492,10 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 					'description' => __( 'Text for the link to answers for the prompt.', 'jetpack' ),
 					'type'        => 'string',
 				),
+				'bloganuary_id'         => array(
+					'description' => __( 'Id used by the bloganuary promotion', 'jetpack' ),
+					'type'        => 'string',
+				),
 			),
 		);
 	}
@@ -475,39 +527,6 @@ class WPCOM_REST_API_V3_Endpoint_Blogging_Prompts extends WP_REST_Posts_Controll
 			__( 'Sorry, you are not allowed to access blogging prompts on this site.', 'jetpack' ),
 			array( 'status' => rest_authorization_required_code() )
 		);
-	}
-
-	/**
-	 * Proxy request to wpcom servers for the site and user.
-	 *
-	 * @param  WP_Rest_Request $request Request to proxy.
-	 * @param  string          $path    Path to append to the rest base.
-	 * @return mixed|WP_Error           Response from wpcom servers or an error.
-	 */
-	public function proxy_request_to_wpcom( $request, $path = '' ) {
-		$blog_id = \Jetpack_Options::get_option( 'id' );
-		$path    = '/sites/' . rawurldecode( $blog_id ) . '/' . rawurldecode( $this->rest_base ) . ( $path ? '/' . rawurldecode( $path ) : '' );
-		$api_url = add_query_arg( $request->get_query_params(), $path );
-
-		// Prefer request as user, if possible. Fall back to blog request to show prompt data for unconnected users.
-		$response = ( new Manager() )->is_user_connected()
-			? Client::wpcom_json_api_request_as_user( $api_url, '3', array(), null, 'wpcom' )
-			: Client::wpcom_json_api_request_as_blog( $api_url, 'v3', array(), null, 'wpcom' );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$response_status = wp_remote_retrieve_response_code( $response );
-		$response_body   = json_decode( wp_remote_retrieve_body( $response ) );
-
-		if ( $response_status >= 400 ) {
-			$code    = isset( $response_body->code ) ? $response_body->code : 'unknown_error';
-			$message = isset( $response_body->message ) ? $response_body->message : __( 'An unknown error occurred.', 'jetpack' );
-			return new WP_Error( $code, $message, array( 'status' => $response_status ) );
-		}
-
-		return $response_body;
 	}
 
 	/**

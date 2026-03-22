@@ -40,7 +40,8 @@ class Notifications implements IntegrationInterface {
 	 */
 	private function hooks() {
 
-		add_filter( 'wpforms_builder_notifications_sender_address_settings', [ $this, 'change_from_email_settings' ], 10, 3 );
+		add_filter( 'wpforms_builder_notifications_sender_address_settings', [ $this, 'change_from_email_settings' ], PHP_INT_MIN, 3 );
+		add_filter( 'wpforms_builder_notifications_sender_name_settings', [ $this, 'change_from_name_settings' ], PHP_INT_MIN, 3 );
 		add_action( 'wp_ajax_wpforms_builder_notification_from_email_validate', [ $this, 'notification_from_email_validate' ] );
 		add_filter( 'wpforms_builder_strings', [ $this, 'form_builder_strings' ], 10, 2 );
 	}
@@ -56,7 +57,7 @@ class Notifications implements IntegrationInterface {
 
 		// Before checking if $_POST['email'] is valid email, we need to check if smart tag is used and return its value.
 		$email = ! empty( $_POST['email'] ) ? sanitize_text_field( wp_unslash( $_POST['email'] ) ) : '';
-		$email = $email ? sanitize_email( wpforms_process_smart_tags( $email, [], [], '' ) ) : '';
+		$email = $email ? sanitize_email( wpforms_process_smart_tags( $email, [], [], '', 'smtp-notification-validation' ) ) : '';
 
 		if ( ! is_email( $email ) ) {
 			wp_send_json_error(
@@ -86,7 +87,9 @@ class Notifications implements IntegrationInterface {
 	 */
 	public function form_builder_strings( $strings, $form ) {
 
-		$strings['allow_only_one_email'] = esc_html__( 'Notifications can only use 1 From Email. Please do not enter multiple addresses.', 'wpforms-lite' );
+		$strings['empty_email_address']     = esc_html__( 'Please enter a valid email address. Your notifications won\'t be sent if the field is not filled in correctly.', 'wpforms-lite' );
+		$strings['allow_only_one_email']    = esc_html__( 'Notifications can only use 1 From Email. Please do not enter multiple addresses.', 'wpforms-lite' );
+		$strings['allow_only_email_fields'] = esc_html__( 'This smart tag does not point to an Email field in your form.', 'wpforms-lite' );
 
 		return $strings;
 	}
@@ -125,16 +128,41 @@ class Notifications implements IntegrationInterface {
 
 		$args = wp_parse_args( $args, $default );
 
-		$email = empty( $form_data['settings']['notifications'][ $id ]['sender_address'] ) ? '{admin_email}' : $form_data['settings']['notifications'][ $id ]['sender_address'];
+		return $args;
+	}
 
-		if ( $this->email_domain_matches_site_domain( $email ) || $this->has_active_smtp_plugin() ) {
-			return $args;
+	/**
+	 * Add warning message when name empty.
+	 *
+	 * @since 1.8.4
+	 *
+	 * @param array $args      Field settings.
+	 * @param array $form_data Form data.
+	 * @param int   $id        Notification ID.
+	 *
+	 * @return array
+	 */
+	public function change_from_name_settings( $args, $form_data, $id ) {
+
+		// phpcs:disable WPForms.PHP.ValidateHooks.InvalidHookName
+		/** This filter is documented in lite/wpforms-lite.php */
+		$from_name_after = apply_filters( 'wpforms_builder_notifications_from_name_after', '', $form_data, $id );
+		// phpcs:enable WPForms.PHP.ValidateHooks.InvalidHookName
+
+		if ( ! empty( $from_name_after ) ) {
+			$default = [
+				'readonly'    => true,
+				'after'       => '<div class="wpforms-alert wpforms-alert-warning">' . $from_name_after . '</div>',
+				'input_class' => 'wpforms-disabled',
+				'class'       => 'from-name wpforms-panel-field-warning',
+			];
+		} else {
+			$default = [
+				'class' => 'from-name',
+			];
 		}
 
-		$args['after']  = $this->get_warning_message();
-		$args['class'] .= ' wpforms-panel-field-warning';
-
-		return $args;
+		return wp_parse_args( $args, $default );
 	}
 
 	/**
@@ -153,29 +181,37 @@ class Notifications implements IntegrationInterface {
 			esc_html( $site_domain )
 		);
 
-		$install_wp_mail_smtp_text = sprintf(
-			wp_kses( /* translators: %1$s - WP Mail SMTP install page URL. */
-				__(
-					'We strongly recommend that you install the free <a href="%1$s" target="_blank">WP Mail SMTP</a> plugin! The Setup Wizard makes it easy to fix your emails.',
-					'wpforms-lite'
+		$install_wp_mail_smtp_text = '';
+
+		// If WP Mail SMTP is not active, show a message to install it.
+		if (
+			! is_plugin_active( 'wp-mail-smtp-pro/wp_mail_smtp.php' ) &&
+			! is_plugin_active( 'wp-mail-smtp/wp_mail_smtp.php' )
+		) {
+			$install_wp_mail_smtp_text .= sprintf(
+				wp_kses( /* translators: %1$s - WP Mail SMTP install page URL. */
+					__(
+						'We strongly recommend that you install the free <a href="%1$s" target="_blank">WP Mail SMTP</a> plugin! The Setup Wizard makes it easy to fix your emails.',
+						'wpforms-lite'
+					),
+					[
+						'a' => [
+							'href'   => [],
+							'target' => [],
+						],
+					]
 				),
-				[
-					'a' => [
-						'href'   => [],
-						'target' => [],
-					],
-				]
-			),
-			esc_url( admin_url( 'admin.php?page=wpforms-smtp' ) )
-		);
+				esc_url( admin_url( 'admin.php?page=wpforms-smtp' ) )
+			);
+		}
 
 		$address_match_text = sprintf( /* translators: %1$s - WordPress site domain. */
-			__( 'Alternately, try using a From Address that matches your website domain (no-reply@%1$s).', 'wpforms-lite' ),
+			__( 'Alternately, try using a From Address that matches your website domain (admin@%1$s).', 'wpforms-lite' ),
 			esc_html( $site_domain )
 		);
 
 		$fix_email_delivery_text = sprintf(
-			wp_kses( /* translators: %1$s - Fixing email delivery issues doc URL. */
+			wp_kses( /* translators: %1$s - fixing email delivery issues doc URL. */
 				__(
 					'Please check out our <a href="%1$s" target="_blank" rel="noopener noreferrer">doc on fixing email delivery issues</a> for more details.',
 					'wpforms-lite'
@@ -212,7 +248,7 @@ class Notifications implements IntegrationInterface {
 	private function email_domain_matches_site_domain( $email ) {
 
 		// Process smart tags if they are used as a value.
-		$email = wpforms_process_smart_tags( $email, [] );
+		$email = wpforms_process_smart_tags( $email, [], [], '', 'smtp-notification-validation' );
 
 		// Skip processing when email is empty or does not set.
 		// e.g. {field_id="3"} which we don't have at the moment.

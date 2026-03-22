@@ -54,6 +54,37 @@ class ThemeInstallerController extends \WP_REST_Controller {
 				),
 			)
 		);
+
+		\register_rest_route(
+			$this->namespace,
+			$this->rest_base . '/expedite',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'expedite' ),
+					'args'                => $this->get_expedite_args(),
+					'permission_callback' => array( Permissions::class, 'rest_is_authorized_admin' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * Get args for the expedite route.
+	 *
+	 * @return array
+	 */
+	public static function get_expedite_args() {
+		return array(
+			'theme'    => array(
+				'type'     => 'string',
+				'required' => true,
+			),
+			'activate' => array(
+				'type'    => 'boolean',
+				'default' => true,
+			),
+		);
 	}
 
 	/**
@@ -140,7 +171,24 @@ class ThemeInstallerController extends \WP_REST_Controller {
 		// Execute the task if it need not be queued.
 		$theme_install_task = new ThemeInstallTask( $theme, $activate );
 
-		return $theme_install_task->execute();
+		$status = $theme_install_task->execute();
+		if ( ! \is_wp_error( $status ) ) {
+			return new \WP_REST_Response(
+				array(),
+				200
+			);
+		}
+
+		// Handle race condition, incase it got installed in between.
+		$code = $status->get_error_code();
+		if ( 'folder_exists' !== $code ) {
+			return $status;
+		}
+
+		return new \WP_REST_Response(
+			array(),
+			200
+		);
 	}
 
 	/**
@@ -181,6 +229,35 @@ class ThemeInstallerController extends \WP_REST_Controller {
 			),
 			200
 		);
+	}
 
+	/**
+	 * Expedites an existing ThemeInstallTask with a given slug.
+	 *
+	 * @param \WP_REST_Request $request The request object
+	 * @return \WP_REST_Response
+	 */
+	public function expedite( \WP_REST_Request $request ) {
+		$theme    = $request->get_param( 'theme' );
+		$activate = $request->get_param( 'activate' );
+
+		if ( ThemeInstaller::exists( $theme, $activate ) ) {
+			return new \WP_REST_Response(
+				array(),
+				200
+			);
+		}
+
+		if ( ThemeInstallTaskManager::expedite( $theme ) ) {
+			return new \WP_REST_Response(
+				array(),
+				200
+			);
+		}
+
+		return new \WP_REST_Response(
+			array(),
+			400
+		);
 	}
 }

@@ -1,28 +1,16 @@
 <?php
 
-use NewfoldLabs\WP\ModuleLoader\Container;
-use NewfoldLabs\WP\Module\Staging\Staging;
-use function NewfoldLabs\WP\ModuleLoader\register;
+namespace NewfoldLabs\WP\Module\Staging;
 
-if ( function_exists( 'add_action' ) ) {
+if ( ! defined( 'NFD_STAGING_DIR' ) ) {
+	define( 'NFD_STAGING_DIR', __DIR__ );
+}
 
-	add_action(
-		'plugins_loaded',
-		function () {
-
-			register(
-				array(
-					'name'     => 'staging',
-					'label'    => __( 'Staging', 'newfold-staging-module' ),
-					'callback' => function ( Container $container ) {
-						return new Staging( $container );
-					},
-					'isActive' => true,
-					'isHidden' => true,
-				)
-			);
-
+if ( function_exists( 'add_filter' ) ) {
+	add_filter(
+		'newfold/features/filter/register',
+		function ( $features ) {
+			return array_merge( $features, array( StagingFeature::class ) );
 		}
 	);
-
 }

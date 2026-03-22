@@ -4,17 +4,18 @@
  *
  * @package           WPPluginBluehost
  * @author            Newfold Digital
- * @copyright         Copyright 2023 by Newfold Digital - All rights reserved.
+ * @copyright         Copyright 2024 by Newfold Digital - All rights reserved.
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin
  * Plugin Name:       The Bluehost Plugin
  * Plugin URI:        https://bluehost.com
+ * Update URI:        https://github.com/bluehost/bluehost-wordpress-plugin
  * Description:       WordPress plugin that integrates a WordPress site with the Bluehost control panel, including performance, security, and update features.
- * Version:           3.0.5
- * Requires at least: 6.0
- * Requires PHP:      7.1
- * Tested up to:      6.2.2
+ * Version:           4.7.2
+ * Requires PHP:      7.3
+ * Requires at least: 6.6
+ * Tested up to:      6.8.3
  * Author:            Bluehost
  * Author URI:        https://bluehost.com
  * Text Domain:       wp-plugin-bluehost
@@ -27,29 +28,24 @@ namespace Bluehost;
 
 // Do not allow multiple copies of the Bluehost Plugin to be active
 if ( defined( 'BLUEHOST_PLUGIN_VERSION' ) ) {
-	exit;
+	return;
 }
 
 // Define constants
-define( 'BLUEHOST_PLUGIN_VERSION', '3.0.5' );
+define( 'BLUEHOST_PLUGIN_VERSION', '4.7.2' );
 define( 'BLUEHOST_PLUGIN_FILE', __FILE__ );
 define( 'BLUEHOST_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'BLUEHOST_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'BLUEHOST_BUILD_DIR', BLUEHOST_PLUGIN_DIR . 'build/' . BLUEHOST_PLUGIN_VERSION );
+define( 'BLUEHOST_BUILD_URL', BLUEHOST_PLUGIN_URL . 'build/' . BLUEHOST_PLUGIN_VERSION );
 if ( ! defined( 'NFD_HIIVE_URL' ) ) {
 	define( 'NFD_HIIVE_URL', 'https://hiive.cloud/api' );
 }
 
 if ( defined( 'BURST_SAFETY_MODE' ) && BURST_SAFETY_MODE ) {
-
-	// Load alternate experience
-	require __DIR__ . '/inc/alt-experience/init.php';
-
-	// Short-circuit all plugin functionality
+	require __DIR__ . '/inc/simple-ui/init.php';
 	return;
 }
-
-define( 'BLUEHOST_BUILD_DIR', BLUEHOST_PLUGIN_DIR . 'build/' . BLUEHOST_PLUGIN_VERSION );
-define( 'BLUEHOST_BUILD_URL', BLUEHOST_PLUGIN_URL . 'build/' . BLUEHOST_PLUGIN_VERSION );
 
 global $pagenow;
 if ( 'plugins.php' === $pagenow ) {
@@ -58,8 +54,8 @@ if ( 'plugins.php' === $pagenow ) {
 
 	$plugin_check = new Plugin_PHP_Compat_Check( __FILE__ );
 
-	$plugin_check->min_php_version = '7.1';
-	$plugin_check->min_wp_version  = '6.0';
+	$plugin_check->min_php_version = '7.3';
+	$plugin_check->min_wp_version  = '6.6';
 
 	$plugin_check->check_plugin_requirements();
 }
@@ -77,9 +73,10 @@ $nfd_plugins_check->legacy_plugins = array(
 	'The Web.com Plugin'       => 'wp-plugin-web/wp-plugin-web.php',
 	'The Crazy Domains Plugin' => 'wp-plugin-web/wp-plugin-crazy-domains.php',
 );
+// Check plugin requirements
 $pass_nfd_check = $nfd_plugins_check->check_plugin_requirements();
 
 // Check PHP version before initializing to prevent errors if plugin is incompatible.
-if ( $pass_nfd_check && version_compare( PHP_VERSION, '5.3', '>=' ) ) {
-	require dirname( __FILE__ ) . '/bootstrap.php';
+if ( $pass_nfd_check && version_compare( PHP_VERSION, '7.3', '>=' ) ) {
+	require __DIR__ . '/bootstrap.php';
 }

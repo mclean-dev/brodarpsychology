@@ -38,6 +38,7 @@ new WPCOM_JSON_API_List_Users_Endpoint(
 			'search'          => '(string) Find matching users.',
 			'search_columns'  => "(array) Specify which columns to check for matching users. Can be any of 'ID', 'user_login', 'user_email', 'user_url', 'user_nicename', and 'display_name'. Only works when combined with `search` parameter.",
 			'role'            => '(string) Specify a specific user role to fetch.',
+			'capability'      => '(string) Specify a specific capability to fetch. You can specify multiple by comma separating them, in which case the user needs to match all capabilities provided.',
 		),
 
 		'response_format'      => array(
@@ -58,7 +59,7 @@ new WPCOM_JSON_API_List_Users_Endpoint(
 				"nice_name": "apiexamples",
 				"URL": "http://apiexamples.wordpress.com",
 				"avatar_URL": "https://1.gravatar.com/avatar/a2afb7b6c0e23e5d363d8612fb1bd5ad?s=96&d=identicon&r=G",
-				"profile_URL": "https://en.gravatar.com/apiexamples",
+				"profile_URL": "https://gravatar.com/apiexamples",
 				"site_ID": 82974409,
 				"roles": [
 					"administrator"
@@ -157,6 +158,10 @@ class WPCOM_JSON_API_List_Users_Endpoint extends WPCOM_JSON_API_Endpoint {
 
 		if ( ! empty( $args['role'] ) ) {
 			$query['role'] = $args['role'];
+		}
+
+		if ( ! empty( $args['capability'] ) ) {
+			$query['capability'] = $args['capability'];
 		}
 
 		$user_query = new WP_User_Query( $query );

@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Register and setup WPForms as a Visual Composer element.
  *
@@ -11,7 +15,7 @@ function wpforms_visual_composer_shortcode() {
 		return;
 	}
 
-	$wpf = wpforms()->form->get(
+	$wpf = wpforms()->obj( 'form' )->get(
 		'',
 		[
 			'orderby' => 'title',
@@ -105,7 +109,7 @@ function wpforms_visual_composer_shortcode_css() {
 	if ( wpforms_setting( 'disable-css', '1' ) === '2' ) {
 		wp_enqueue_style(
 			'wpforms-base',
-			WPFORMS_PLUGIN_URL . 'assets/css/wpforms-base.css',
+			WPFORMS_PLUGIN_URL . 'assets/css/frontend/classic/wpforms-base.css',
 			[],
 			WPFORMS_VERSION
 		);

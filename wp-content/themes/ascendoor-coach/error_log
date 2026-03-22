@@ -1,0 +1,4 @@
+[07-Nov-2024 11:10:45 America/Boise] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home3/brodarps/public_html/wp-content/themes/ascendoor-coach/404.php:10
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-content/themes/ascendoor-coach/404.php on line 10

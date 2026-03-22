@@ -30,9 +30,9 @@ class ModuleController {
 	public static function module_switcher() {
 		$module_name = 'onboarding';
 		// Set brand context for the module.
-		Brands::set_current_brand( container() );
+		$current_brand = Brands::set_current_brand( container() );
 
-		$enable_onboarding = self::verify_onboarding_criteria();
+		$enable_onboarding = self::verify_onboarding_criteria( $current_brand );
 
 		// Check if he is a Non-Ecommerce Customer and Disable Redirect and Module
 		if ( ! $enable_onboarding ) {
@@ -43,24 +43,19 @@ class ModuleController {
 				// Deactivate the Module
 				deactivate( $module_name );
 			}
-		} else {
-
-			// Check if the Module Does Exist
-			if ( ModuleRegistry::get( $module_name ) ) {
-
+		} elseif ( ModuleRegistry::get( $module_name ) ) {
 				// Activate the Module
 				activate( $module_name );
-			}
 		}
-
 	}
 
 	/**
 	 * Verify all the necessary criteria to enable Onboarding for the site.
 	 *
+	 * @param string $brand_name The kebab cased name of the brand.
 	 * @return boolean
 	 */
-	public static function verify_onboarding_criteria() {
+	public static function verify_onboarding_criteria( $brand_name ) {
 		// Check if nfd_module_onboarding_activate query param was passed previously.
 		$activate_transient_name = Options::get_option_name( 'activate_param' );
 		if ( '1' === get_transient( $activate_transient_name ) ) {
@@ -73,6 +68,11 @@ class ModuleController {
 				// Set a 30 day transient that reflects this parameter being passed.
 				set_transient( $activate_transient_name, '1', 2592000 );
 				return true;
+		}
+
+		$eligible_brand = self::is_brand_eligible( $brand_name );
+		if ( ! $eligible_brand ) {
+			return false;
 		}
 
 		$customer_data       = Data::customer_data();
@@ -88,12 +88,27 @@ class ModuleController {
 						return true;
 					}
 					break;
+				// The Sitegen flow always starts with wp-setup, regardless of whether the AI Sitegen capability is set.
 				case 'wp-setup':
 					return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks if a particular brand name is eligible for Onboarding.
+	 *
+	 * @param string $brand_name The kebab cased name of the brand.
+	 * @return boolean
+	 */
+	public static function is_brand_eligible( $brand_name ) {
+		if ( false !== strpos( $brand_name, 'hostgator' ) && 'hostgator-br' !== $brand_name && 'hostgator-us' !== $brand_name ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

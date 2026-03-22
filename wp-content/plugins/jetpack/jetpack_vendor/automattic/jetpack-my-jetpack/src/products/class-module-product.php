@@ -86,8 +86,8 @@ abstract class Module_Product extends Product {
 	 */
 	public static function get_status() {
 		$status = parent::get_status();
-		if ( 'active' === $status && ! static::is_module_active() ) {
-			$status = 'module_disabled';
+		if ( Products::STATUS_INACTIVE === $status && ! static::is_module_active() ) {
+			$status = Products::STATUS_MODULE_DISABLED;
 		}
 		return $status;
 	}
@@ -130,5 +130,4 @@ abstract class Module_Product extends Product {
 		}
 		return Jetpack::deactivate_module( static::$module_name );
 	}
-
 }

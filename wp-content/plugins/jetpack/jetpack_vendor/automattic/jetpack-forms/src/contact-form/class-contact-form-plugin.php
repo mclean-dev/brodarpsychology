@@ -8,9 +8,11 @@
 namespace Automattic\Jetpack\Forms\ContactForm;
 
 use Automattic\Jetpack\Assets;
-use Automattic\Jetpack\Blocks;
+use Automattic\Jetpack\Extensions\Contact_Form\Contact_Form_Block;
 use Automattic\Jetpack\Forms\Jetpack_Forms;
 use Automattic\Jetpack\Forms\Service\Post_To_Url;
+use Jetpack_Options;
+use WP_Error;
 
 /**
  * Sets up various actions, filters, post types, post statuses, shortcodes.
@@ -129,7 +131,7 @@ class Contact_Form_Plugin {
 	}
 
 	/**
-	 * Class uses singleton pattern; use Grunion_Contact_Form_Plugin::init() to initialize.
+	 * Class uses singleton pattern; use Contact_Form_Plugin::init() to initialize.
 	 */
 	protected function __construct() {
 		$this->add_shortcode();
@@ -251,50 +253,24 @@ class Contact_Form_Plugin {
 		 *  }
 		 *  add_action('wp_print_styles', 'remove_grunion_style');
 		 */
-		wp_register_style( 'grunion.css', Jetpack_Forms::plugin_url() . 'contact-form/css/grunion.css', array(), \JETPACK__VERSION );
+		wp_register_style( 'grunion.css', Jetpack_Forms::plugin_url() . '../dist/contact-form/css/grunion.css', array(), \JETPACK__VERSION );
 		wp_style_add_data( 'grunion.css', 'rtl', 'replace' );
 
-		add_action( 'enqueue_block_editor_assets', array( $this, 'load_editor_scripts' ) );
+		Assets::register_script(
+			'accessible-form',
+			'../../dist/contact-form/js/accessible-form.js',
+			__FILE__,
+			array(
+				'strategy'     => 'defer',
+				'textdomain'   => 'jetpack-forms',
+				'version'      => \JETPACK__VERSION,
+				'dependencies' => array( 'wp-i18n' ),
+			)
+		);
+
 		add_filter( 'js_do_concat', array( __CLASS__, 'disable_forms_view_script_concat' ), 10, 3 );
 
 		self::register_contact_form_blocks();
-	}
-
-	/**
-	 * Loads the Form blocks scripts.
-	 */
-	public static function load_editor_scripts() {
-		Assets::register_script(
-			'jp-forms-blocks',
-			'../../dist/blocks/editor.js',
-			__FILE__,
-			array(
-				'in_footer'  => true,
-				'textdomain' => 'jetpack-forms',
-				'enqueue'    => true,
-			)
-		);
-	}
-
-	/**
-	 * Enqueue scripts responsible for handling contact form view scripts.
-	 */
-	private static function load_view_scripts() {
-		if ( is_admin() ) {
-			// A block's view assets will not be required in wp-admin.
-			return;
-		}
-
-		Assets::register_script(
-			'jp-forms-view',
-			'../../dist/blocks/view.js',
-			__FILE__,
-			array(
-				'in_footer'  => true,
-				'textdomain' => 'jetpack-forms',
-				'enqueue'    => true,
-			)
-		);
 	}
 
 	/**
@@ -314,123 +290,8 @@ class Contact_Form_Plugin {
 	 * Register the contact form block.
 	 */
 	private static function register_contact_form_blocks() {
-		Blocks::jetpack_register_block(
-			'jetpack/contact-form',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_form' ),
-			)
-		);
-
 		// Field render methods.
-		Blocks::jetpack_register_block(
-			'jetpack/field-text',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_text' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-name',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_name' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-email',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_email' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-url',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_url' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-date',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_date' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-telephone',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_telephone' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-textarea',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_textarea' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-checkbox',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_checkbox' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-checkbox-multiple',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_checkbox_multiple' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-option-checkbox',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_option' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-radio',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_radio' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-option-radio',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_option' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-select',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_select' ),
-			)
-		);
-		Blocks::jetpack_register_block(
-			'jetpack/field-consent',
-			array(
-				'render_callback' => array( __CLASS__, 'gutenblock_render_field_consent' ),
-			)
-		);
-	}
-
-	/**
-	 * Render the gutenblock form.
-	 *
-	 * @param array  $atts - the block attributes.
-	 * @param string $content - html content.
-	 *
-	 * @return string
-	 */
-	public static function gutenblock_render_form( $atts, $content ) {
-
-		// Render fallback in other contexts than frontend (i.e. feed, emails, API, etc.), unless the form is being submitted.
-		if ( ! jetpack_is_frontend() && ! isset( $_POST['contact-form-id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			return sprintf(
-				'<div class="%1$s"><a href="%2$s" target="_blank" rel="noopener noreferrer">%3$s</a></div>',
-				esc_attr( Blocks::classes( 'contact-form', $atts ) ),
-				esc_url( get_the_permalink() ),
-				esc_html__( 'Submit a form.', 'jetpack-forms' )
-			);
-		}
-
-		self::load_view_scripts();
-
-		return Contact_Form::parse( $atts, do_blocks( $content ) );
+		Contact_Form_Block::register_child_blocks();
 	}
 
 	/**
@@ -726,9 +587,9 @@ class Contact_Form_Plugin {
 			check_admin_referer( "contact-form_{$id}" );
 		}
 
-		$is_widget              = 0 === strpos( $id, 'widget-' );
-		$is_block_template      = 0 === strpos( $id, 'block-template-' );
-		$is_block_template_part = 0 === strpos( $id, 'block-template-part-' );
+		$is_widget              = str_starts_with( $id, 'widget-' );
+		$is_block_template      = str_starts_with( $id, 'block-template-' );
+		$is_block_template_part = str_starts_with( $id, 'block-template-part-' );
 
 		$form = false;
 
@@ -753,7 +614,7 @@ class Contact_Form_Plugin {
 				);
 				// This is lamer - no API for outputting a given widget by ID
 				ob_start();
-				// Process the widget to populate Grunion_Contact_Form::$last
+				// Process the widget to populate Contact_Form::$last
 				call_user_func( $widget['callback'], $widget_args, $widget['params'][0] );
 				ob_end_clean();
 			}
@@ -808,13 +669,13 @@ class Contact_Form_Plugin {
 			// Ensure 'block_template' attribute is added to any shortcodes in the template.
 			$template = Util::grunion_contact_form_set_block_template_attribute( $template );
 
-			// Process the block template to populate Grunion_Contact_Form::$last
+			// Process the block template to populate Contact_Form::$last
 			get_the_block_template_html();
 		} elseif ( $is_block_template_part ) {
 			$block_template_part_id   = str_replace( 'block-template-part-', '', $id );
 			$bits                     = explode( '//', $block_template_part_id );
 			$block_template_part_slug = array_pop( $bits );
-			// Process the block part template to populate Grunion_Contact_Form::$last
+			// Process the block part template to populate Contact_Form::$last
 			$attributes = array(
 				'theme'   => wp_get_theme()->get_stylesheet(),
 				'slug'    => $block_template_part_slug,
@@ -823,9 +684,20 @@ class Contact_Form_Plugin {
 			do_blocks( '<!-- wp:template-part ' . wp_json_encode( $attributes ) . ' /-->' );
 		} else {
 			// It's a form embedded in a post
+
+			if ( ! is_post_publicly_viewable( $id ) && ! current_user_can( 'read_post', $id ) ) {
+				// The user can't see the post.
+				return false;
+			}
+
+			if ( post_password_required( $id ) ) {
+				// The post is password-protected and the password is not provided.
+				return false;
+			}
+
 			$post = get_post( $id );
 
-			// Process the content to populate Grunion_Contact_Form::$last
+			// Process the content to populate Contact_Form::$last
 			if ( $post ) {
 				/** This filter is already documented in core. wp-includes/post-template.php */
 				apply_filters( 'the_content', $post->post_content );
@@ -877,6 +749,8 @@ class Contact_Form_Plugin {
 
 	/**
 	 * Handle the ajax request.
+	 *
+	 * @return never
 	 */
 	public function ajax_request() {
 		$submission_result = self::process_form_submission();
@@ -909,7 +783,7 @@ class Contact_Form_Plugin {
 	 * Ensure the post author is always zero for contact-form feedbacks
 	 * Attached to `wp_insert_post_data`
 	 *
-	 * @see Grunion_Contact_Form::process_submission()
+	 * @see Contact_Form::process_submission()
 	 *
 	 * @param array $data the data to insert.
 	 * @param array $postarr the data sent to wp_insert_post().
@@ -1114,7 +988,7 @@ class Contact_Form_Plugin {
 			} elseif ( in_array( $key, array( 'REMOTE_ADDR', 'REQUEST_URI', 'DOCUMENT_URI' ), true ) ) {
 				// All three of these are relevant indicators and should be passed along.
 				$form[ $key ] = $value;
-			} elseif ( substr( $key, 0, 5 ) === 'HTTP_' ) {
+			} elseif ( str_starts_with( $key, 'HTTP_' ) ) {
 				// Any other HTTP header indicators.
 				$form[ $key ] = $value;
 			}
@@ -1134,7 +1008,7 @@ class Contact_Form_Plugin {
 
 	/**
 	 * Submit contact-form data to Akismet to check for spam.
-	 * If you're accepting a new item via $_POST, run it Grunion_Contact_Form_Plugin::prepare_for_akismet() first
+	 * If you're accepting a new item via $_POST, run it Contact_Form_Plugin::prepare_for_akismet() first
 	 * Attached to `jetpack_contact_form_is_spam`
 	 *
 	 * @param bool  $is_spam - if the submission is spam.
@@ -1172,7 +1046,7 @@ class Contact_Form_Plugin {
 		$result = false;
 
 		if ( isset( $response[0]['x-akismet-pro-tip'] ) && 'discard' === trim( $response[0]['x-akismet-pro-tip'] ) && get_option( 'akismet_strictness' ) === '1' ) {
-			$result = new \WP_Error( 'feedback-discarded', __( 'Feedback discarded.', 'jetpack-forms' ) );
+			$result = new WP_Error( 'feedback-discarded', __( 'Feedback discarded.', 'jetpack-forms' ) );
 		} elseif ( isset( $response[1] ) && 'true' === trim( $response[1] ) ) { // 'true' is spam
 			$result = true;
 		}
@@ -1262,7 +1136,7 @@ class Contact_Form_Plugin {
 		$all_fields     = isset( $content_fields['_feedback_all_fields'] ) ? $content_fields['_feedback_all_fields'] : array();
 		$md             = $has_json_data
 			? array_diff_key( $all_fields, array_flip( array( 'entry_title', 'email_marketing_consent', 'entry_permalink', 'feedback_id' ) ) )
-			: get_post_meta( $post_id, '_feedback_extra_fields', true );
+			: (array) get_post_meta( $post_id, '_feedback_extra_fields', true );
 
 		$md['-3_response_date'] = get_the_date( 'Y-m-d H:i:s', $post_id );
 		$md['93_ip_address']    = ( isset( $content_fields['_feedback_ip'] ) ) ? $content_fields['_feedback_ip'] : 0;
@@ -1509,6 +1383,8 @@ class Contact_Form_Plugin {
 		$post_ids     = $this->personal_data_post_ids_by_email( $email, $per_page, $page, $last_post_id );
 
 		foreach ( $post_ids as $post_id ) {
+			$last_post_id = $post_id;
+
 			/**
 			 * Filters whether to erase a particular Feedback post.
 			 *
@@ -1553,7 +1429,7 @@ class Contact_Form_Plugin {
 		if ( $done ) {
 			delete_option( $option_name );
 		} else {
-			update_option( $option_name, (int) $post_id );
+			update_option( $option_name, (int) $last_post_id );
 		}
 
 		return array(
@@ -1613,7 +1489,7 @@ class Contact_Form_Plugin {
 	 *
 	 * @param  string $search SQL where clause.
 	 *
-	 * @return array          Filtered SQL where clause.
+	 * @return string         Filtered SQL where clause.
 	 */
 	public function personal_data_search_filter( $search ) {
 		global $wpdb;
@@ -1622,8 +1498,8 @@ class Contact_Form_Plugin {
 		 * Limits search to `post_content` only, and we only match the
 		 * author's email address whenever it's on a line by itself.
 		 */
-		if ( $this->pde_email_address && false !== strpos( $search, '..PDE..AUTHOR EMAIL:..PDE..' ) ) {
-			$search = $wpdb->prepare(
+		if ( $this->pde_email_address && str_contains( $search, '..PDE..AUTHOR EMAIL:..PDE..' ) ) {
+			$search = (string) $wpdb->prepare(
 				" AND (
 					{$wpdb->posts}.post_content LIKE %s
 					OR {$wpdb->posts}.post_content LIKE %s
@@ -1925,7 +1801,8 @@ class Contact_Form_Plugin {
 		/**
 		 * Print CSV headers
 		 */
-		fputcsv( $output, $fields );
+		// @todo When we drop support for PHP <7.4, consider passing empty-string for `$escape` here for better spec compatibility.
+		fputcsv( $output, $fields, ',', '"', '\\' );
 
 		/**
 		 * Print rows to the output.
@@ -1944,7 +1821,8 @@ class Contact_Form_Plugin {
 			/**
 			 * Output the complete CSV row
 			 */
-			fputcsv( $output, $current_row );
+			// @todo When we drop support for PHP <7.4, consider passing empty-string for `$escape` here for better spec compatibility.
+			fputcsv( $output, $current_row, ',', '"', '\\' );
 		}
 
 		fclose( $output ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
@@ -2165,7 +2043,7 @@ class Contact_Form_Plugin {
 
 		if ( count( $content ) > 1 ) {
 			$content = str_ireplace( array( '<br />', ')</p>' ), '', $content[1] );
-			if ( strpos( $content, 'JSON_DATA' ) !== false ) {
+			if ( str_contains( $content, 'JSON_DATA' ) ) {
 				$chunks     = explode( "\nJSON_DATA", $content );
 				$all_values = json_decode( $chunks[1], true );
 				if ( is_array( $all_values ) ) {

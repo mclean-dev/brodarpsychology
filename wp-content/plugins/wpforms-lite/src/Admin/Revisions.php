@@ -66,24 +66,6 @@ class Revisions {
 	private $viewed;
 
 	/**
-	 * Date format to use in UI.
-	 *
-	 * @since 1.7.3
-	 *
-	 * @var string
-	 */
-	private $date_format = 'M j';
-
-	/**
-	 * Time format to use in UI.
-	 *
-	 * @since 1.7.3
-	 *
-	 * @var string
-	 */
-	private $time_format;
-
-	/**
 	 * Initialize the class if preconditions are met.
 	 *
 	 * @since 1.7.3
@@ -108,17 +90,22 @@ class Revisions {
 
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		// Fetch revision, if needed.
-		if ( $this->revision_id && wp_revisions_enabled( $this->form ) ) {
-			$this->revision = wp_get_post_revision( $this->revision_id );
-		}
-
-		// Bail if we don't have a valid revision.
-		if ( $this->revision_id && ! $this->revision instanceof WP_Post ) {
+		if ( ! $this->can_access_form() ) {
 			return;
 		}
 
-		$this->time_format = get_option( 'time_format' );
+		if ( $this->revision_id && wp_revisions_enabled( $this->form ) ) {
+			$this->revision = wp_get_post_revision( $this->revision_id );
+
+			// Bail if we don't have a valid revision.
+			if (
+				! $this->revision instanceof WP_Post ||
+				$this->revision->post_parent !== $this->form_id ||
+				$this->revision->ID !== $this->revision_id
+			) {
+				return;
+			}
+		}
 
 		$this->hooks();
 	}
@@ -146,7 +133,7 @@ class Revisions {
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$this->form_id = $id;
-		$form_handler  = wpforms()->get( 'form' );
+		$form_handler  = wpforms()->obj( 'form' );
 
 		if ( ! $form_handler ) {
 			return false;
@@ -205,10 +192,11 @@ class Revisions {
 	public function get_formatted_datetime( $datetime, $part = 'date' ) {
 
 		if ( $part === 'time' ) {
-			return wpforms_datetime_format( $datetime, $this->time_format, true );
+			return wpforms_time_format( $datetime, '', true );
 		}
 
-		return wpforms_datetime_format( $datetime, $this->date_format, true );
+		// M j format needs to keep one-line date.
+		return wpforms_date_format( $datetime, 'M j', true );
 	}
 
 	/**
@@ -327,12 +315,12 @@ class Revisions {
 		$args['author_id'] = $current_revision->post_author;
 
 		foreach ( $revisions as $revision ) {
-			$time_diff = sprintf( /* translators: %s - Relative time difference, e.g. "5 minutes", "12 days". */
+			$time_diff = sprintf( /* translators: %s - relative time difference, e.g. "5 minutes", "12 days". */
 				__( '%s ago', 'wpforms-lite' ),
 				human_time_diff( strtotime( $revision->post_modified_gmt . ' +0000' ) )
 			);
 
-			$date_time = sprintf( /* translators: %1$s - date, %2$s - time when revision was created, e.g. "Dec 25 at 12:57pm". */
+			$date_time = sprintf( /* translators: %1$s - date, %2$s - time when item was created, e.g. "Oct 22 at 11:11am". */
 				__( '%1$s at %2$s', 'wpforms-lite' ),
 				$this->get_formatted_datetime( $revision->post_modified_gmt ),
 				$this->get_formatted_datetime( $revision->post_modified_gmt, 'time' )
@@ -394,11 +382,23 @@ class Revisions {
 			return;
 		}
 
+		if ( ! $this->can_access_form() ) {
+			wp_die( esc_html__( 'You do not have permission to restore revisions for this form.', 'wpforms-lite' ) );
+		}
+
+		if (
+			! $this->revision instanceof WP_Post ||
+			$this->revision->post_parent !== $this->form_id ||
+			$this->revision->ID !== $this->revision_id
+		) {
+			wp_die( esc_html__( 'Invalid revision. The revision does not belong to this form.', 'wpforms-lite' ) );
+		}
+
 		$restored_id = wp_restore_post_revision( $this->revision );
 
 		if ( $restored_id ) {
 			wp_safe_redirect(
-				wpforms()->get( 'revisions' )->get_url(
+				wpforms()->obj( 'revisions' )->get_url(
 					[
 						'form_id' => $restored_id,
 					]
@@ -472,5 +472,25 @@ class Revisions {
 		$strings['revision_update_confirm'] = esc_html__( 'You’re about to save a form revision. Continuing will make this the current version.', 'wpforms-lite' );
 
 		return $strings;
+	}
+
+	/**
+	 * Check if the current user has permission to access the form and its revisions.
+	 *
+	 * @since 1.9.5
+	 *
+	 * @return bool
+	 */
+	private function can_access_form(): bool {
+
+		if ( ! wpforms_current_user_can( 'view_form_single', $this->form_id ) ) {
+			return false;
+		}
+
+		if ( ! wpforms_current_user_can( 'edit_form_single', $this->form_id ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

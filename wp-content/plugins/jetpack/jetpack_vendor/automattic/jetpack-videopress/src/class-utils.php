@@ -14,10 +14,10 @@ class Utils {
 	/**
 	 * Build a VideoPress video URL based on the guid and block attributes.
 	 *
-	 * @param {string} $guid       - Video GUID.
-	 * @param {array}  $attributes - Video block attributes. Default is an empty array.
+	 * @param string $guid       - Video GUID.
+	 * @param array  $attributes - Video block attributes. Default is an empty array.
 	 *
-	 * @return {string} VideoPress video URL with the specified attributes.
+	 * @return string VideoPress video URL with the specified attributes.
 	 */
 	public static function get_video_press_url( $guid, $attributes = array() ) {
 		if ( ! $guid ) {
@@ -74,7 +74,7 @@ class Utils {
 	 * @return bool True if the URL is a VideoPress URL, false otherwise.
 	 */
 	public static function is_videopress_url( $url ) {
-		$pattern = '/^https?:\/\/(?:(?:v(?:ideo)?\.wordpress\.com|videopress\.com)\/(?:v|embed)|v\.wordpress\.com)\/([a-z\d]{8})(\/|\b)/i'; // phpcs:ignore WordPress.WP.CapitalPDangit.Misspelled
+		$pattern = '/^https?:\/\/(?:(?:v(?:ideo)?\.wordpress\.com|videopress\.com)\/(?:v|embed)|v\.wordpress\.com)\/([a-z\d]{8})(\/|\b)/i'; // phpcs:ignore WordPress.WP.CapitalPDangit.MisspelledInText
 		return (bool) preg_match( $pattern, $url );
 	}
 }

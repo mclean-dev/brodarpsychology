@@ -65,7 +65,7 @@ class MonsterInsights_Measurement_Protocol_V4 {
 
 		return add_query_arg(
 			array(
-				'api_secret'     => $api_secret,
+				'api_secret'     => apply_filters('monsterinsights_get_mp_call_secret', $api_secret),
 				'measurement_id' => $this->measurement_id,
 			),
 			$this->get_base_url()
@@ -165,6 +165,9 @@ class MonsterInsights_Measurement_Protocol_V4 {
 		$defaults = array(
 			'client_id' => $this->get_client_id( $args ),
 			'events'    => array(),
+			'consent' => array(
+				'ad_personalization' => 'GRANTED',
+			),
 		);
 
 		$body = $this->validate_args( $args, $defaults );

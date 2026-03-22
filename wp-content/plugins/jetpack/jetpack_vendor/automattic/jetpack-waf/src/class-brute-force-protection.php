@@ -14,6 +14,7 @@ use Automattic\Jetpack\IP\Utils as IP_Utils;
 use Automattic\Jetpack\Modules;
 use Automattic\Jetpack\Waf\Waf_Compatibility;
 use Automattic\Jetpack\Waf\Waf_Constants;
+use Automattic\Jetpack\Waf\Waf_Rules_Manager;
 use Jetpack_IXR_Client;
 use Jetpack_Options;
 use WP_Error;
@@ -26,7 +27,7 @@ class Brute_Force_Protection {
 	/**
 	 * Instance of the class.
 	 *
-	 * @var Brute_Force_Protection()
+	 * @var Brute_Force_Protection
 	 */
 	private static $instance = null;
 
@@ -131,6 +132,7 @@ class Brute_Force_Protection {
 		add_action( 'jetpack_modules_loaded', array( $this, 'modules_loaded' ) );
 		add_action( 'login_form', array( $this, 'check_use_math' ), 0 );
 		add_filter( 'authenticate', array( $this, 'check_preauth' ), 10, 3 );
+		add_filter( 'jetpack_has_login_ability', array( $this, 'has_login_ability' ) );
 		add_action( 'wp_login', array( $this, 'log_successful_login' ), 10, 2 );
 		add_action( 'wp_login_failed', array( $this, 'log_failed_attempt' ) );
 		add_action( 'admin_init', array( $this, 'maybe_update_headers' ) );
@@ -212,6 +214,10 @@ class Brute_Force_Protection {
 	 * @return bool
 	 */
 	public static function enable() {
+		// Return true if already enabled.
+		if ( self::is_enabled() ) {
+			return true;
+		}
 		return ( new Modules() )->activate( 'protect', false, false );
 	}
 
@@ -221,6 +227,10 @@ class Brute_Force_Protection {
 	 * @return bool
 	 */
 	public static function disable() {
+		// Return true if already disabled.
+		if ( ! self::is_enabled() ) {
+			return true;
+		}
 		return ( new Modules() )->deactivate( 'protect' );
 	}
 
@@ -626,6 +636,15 @@ class Brute_Force_Protection {
 	}
 
 	/**
+	 * Whether or not the IP allow list is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function ip_allow_list_enabled() {
+		return get_option( Waf_Rules_Manager::IP_ALLOW_LIST_ENABLED_OPTION_NAME, true );
+	}
+
+	/**
 	 * Checks if the IP address is in the allow list.
 	 *
 	 * @deprecated 0.11.0 Use ip_is_allowed()
@@ -648,6 +667,11 @@ class Brute_Force_Protection {
 		// If we found an exact match in wp-config.
 		if ( defined( 'JETPACK_IP_ADDRESS_OK' ) && JETPACK_IP_ADDRESS_OK === $ip ) {
 			return true;
+		}
+
+		// Allow list must be enabled.
+		if ( ! $this->ip_allow_list_enabled() ) {
+			return false;
 		}
 
 		$allow_list = Brute_Force_Protection_Shared_Functions::get_local_allow_list();

@@ -23,6 +23,15 @@ class MonsterInsights_Report {
 	public $name;
 	public $version = '1.0.0';
 	public $source = 'reports';
+	public $start_date;
+	public $end_date;
+
+	/**
+	 * We will use this value if we are not using the same value for report store and relay path.
+	 *
+	 * @var string
+	 */
+	protected $api_path;
 
 	/**
 	 * Primary class constructor.
@@ -160,6 +169,14 @@ class MonsterInsights_Report {
 		$start = ! empty( $args['start'] ) && $this->is_valid_date( $args['start'] ) ? $args['start'] : '';
 		$end   = ! empty( $args['end'] ) && $this->is_valid_date( $args['end'] ) ? $args['end'] : '';
 
+		$compare_start = null;
+		$compare_end   = null;
+
+		if ( isset( $args['compare_start'] ) ) {
+			$compare_start = ! empty( $args['compare_start'] ) && $this->is_valid_date( $args['compare_start'] ) ? $args['compare_start'] : '';
+			$compare_end   = ! empty( $args['compare_end'] ) && $this->is_valid_date( $args['compare_end'] ) ? $args['compare_end'] : '';
+		}
+
 		if ( monsterinsights_is_pro_version() && ! MonsterInsights()->license->license_can( $this->level ) ) {
 			return array(
 				'success' => true,
@@ -199,10 +216,20 @@ class MonsterInsights_Report {
 			) );
 		}
 
+		// These values are going to use on child classes.
+		$this->start_date = $start;
+		$this->end_date   = $end;
+
 		$check_cache       = ( $start === $this->default_start_date() && $end === $this->default_end_date() ) || apply_filters( 'monsterinsights_report_use_cache', false, $this->name );
 		$site_auth         = MonsterInsights()->auth->get_viewname();
 		$ms_auth           = is_multisite() && MonsterInsights()->auth->get_network_viewname();
-		$transient         = 'monsterinsights_report_' . $this->name . '_' . $start . '_' . $end;
+
+		if ( $compare_start && $compare_end ) {
+			$transient = 'monsterinsights_report_' . $this->name . '_' . $start . '_' . $end . '_to_' . $compare_start . '_' . $compare_end;
+		} else {
+			$transient = 'monsterinsights_report_' . $this->name . '_' . $start . '_' . $end;
+		}
+
 		$current_timestamp = current_time( 'U' );
 		// Set to same time as MI cache. MI caches same day to 15 and others to 1 day, so there's no point pinging MI before then.
 		$expiration = apply_filters( 'monsterinsights_report_transient_expiration',
@@ -212,10 +239,16 @@ class MonsterInsights_Report {
 		// Default date range, check.
 		if ( $site_auth || $ms_auth ) {
 			// Single site or MS with auth at subsite
-			$option_name = $site_auth ? 'monsterinsights_report_data_' . $this->name : 'monsterinsights_network_report_data_' . $this->name;
-			$p           = $site_auth ? MonsterInsights()->auth->get_viewid() : MonsterInsights()->auth->get_network_viewid();
+			if ( $compare_start && $compare_end ) {
+				$option_name = $site_auth ? 'monsterinsights_report_data_compare_' . $this->name : 'monsterinsights_network_report_data_compare_' . $this->name;
+			} else {
+				$option_name = $site_auth ? 'monsterinsights_report_data_' . $this->name : 'monsterinsights_network_report_data_' . $this->name;
+			}
+
+			$p = $site_auth ? MonsterInsights()->auth->get_viewid() : MonsterInsights()->auth->get_network_viewid();
 
 			$data = array();
+			// If default date range then get cache data from option.
 			if ( $check_cache ) {
 				$data = ! $site_auth && $ms_auth ? get_site_option( $option_name, array() ) : get_option( $option_name, array() );
 			} else {
@@ -237,11 +270,20 @@ class MonsterInsights_Report {
 
 			// Nothing in cache, either not saved before, expired or mismatch. Let's grab from API
 			$api_options = array( 'start' => $start, 'end' => $end );
+
+			if ( $compare_start && $compare_end ) {
+				$api_options['compare_start'] = $compare_start;
+				$api_options['compare_end']   = $compare_end;
+			}
+
 			if ( ! $site_auth && $ms_auth ) {
 				$api_options['network'] = true;
 			}
 
-			$api = new MonsterInsights_API_Request( 'analytics/reports/' . $this->name . '/', $api_options, 'GET' );
+			// Get the path of the relay.
+			$api_path = empty( $this->api_path ) ? $this->name : $this->api_path;
+
+			$api = new MonsterInsights_API_Request( 'analytics/reports/' . $api_path . '/', $api_options, 'GET' );
 
 			// Use a report source indicator for requests.
 			if ( ! empty( $this->source ) ) {
@@ -300,8 +342,12 @@ class MonsterInsights_Report {
 
 			return array(
 				'success' => false,
-				'error'   => sprintf( __( 'You must be properly authenticated with MonsterInsights to use our reports. Please use our %1$ssetup wizard%2$s to get started.', 'google-analytics-for-wordpress' ), '<a href=" ' . $url . ' ">', '</a>' ),
-				// Translators: Wizard link tag starts with url, Wizard link tag ends.
+				'error'   => sprintf(
+					/* translators: Placeholders add a link to the Setup Wizard page. */
+					__( 'You must be properly authenticated with MonsterInsights to use our reports. Please use our %1$ssetup wizard%2$s to get started.', 'google-analytics-for-wordpress' ),
+					'<a href=" ' . $url . ' ">',
+					'</a>'
+				),
 				'data'    => array(),
 			);
 		}
@@ -313,6 +359,24 @@ class MonsterInsights_Report {
 
 	public function default_end_date() {
 		return date( 'Y-m-d', strtotime( '-1 day' ) );
+	}
+
+	/**
+	 * Default date for compare start.
+	 *
+	 * @return string
+	 */
+	public function default_compare_start_date() {
+		return date( 'Y-m-d', strtotime( '-60 days' ) );
+	}
+
+	/**
+	 * Default date for compare end.
+	 *
+	 * @return string
+	 */
+	public function default_compare_end_date() {
+		return date( 'Y-m-d', strtotime( '-31 day' ) );
 	}
 
 	// Checks to see if date range is valid. Should be 30-yesterday always for lite & any valid date range to today for Pro.

@@ -134,6 +134,11 @@ class SettingsController {
 		$settings = $this->get_current_settings();
 		$params   = $request->get_json_params();
 
+		// Check if $params is an array, else return the current settings that we have.
+		if ( ! is_array( $params ) ) {
+			return $settings;
+		}
+
 		// check if all the param keys are present in the yoast social keys
 		foreach ( $params as $param_key => $param_value ) {
 			if ( ! array_key_exists( $param_key, $this->defaults ) ) {
@@ -232,7 +237,6 @@ class SettingsController {
 		}
 		$social_data['other_social_urls'] = $filtered_social_urls;
 		return $social_data;
-
 	}
 
 	/**
@@ -307,5 +311,4 @@ class SettingsController {
 
 		return false;
 	}
-
 }

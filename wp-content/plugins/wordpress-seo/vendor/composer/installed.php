@@ -1,43 +1,31 @@
 <?php return array(
     'root' => array(
+        'name' => 'yoast/wordpress-seo',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
+        'reference' => '9945c9202afce7b852a67508768bf2e0141d170e',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => 'c8fc314ad906b676cf236cb185aadd0a78b2cc48',
-        'name' => 'yoast/wordpress-seo',
         'dev' => false,
     ),
     'versions' => array(
         'composer/installers' => array(
-            'pretty_version' => 'v1.12.0',
-            'version' => '1.12.0.0',
+            'pretty_version' => 'v2.3.0',
+            'version' => '2.3.0.0',
+            'reference' => '12fb2dfe5e16183de69e784a7b84046c43d97e8e',
             'type' => 'composer-plugin',
             'install_path' => __DIR__ . '/./installers',
             'aliases' => array(),
-            'reference' => 'd20a64ed3c94748397ff5973488761b22f6d3f19',
             'dev_requirement' => false,
-        ),
-        'roundcube/plugin-installer' => array(
-            'dev_requirement' => false,
-            'replaced' => array(
-                0 => '*',
-            ),
-        ),
-        'shama/baton' => array(
-            'dev_requirement' => false,
-            'replaced' => array(
-                0 => '*',
-            ),
         ),
         'yoast/wordpress-seo' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
+            'reference' => '9945c9202afce7b852a67508768bf2e0141d170e',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => 'c8fc314ad906b676cf236cb185aadd0a78b2cc48',
             'dev_requirement' => false,
         ),
     ),

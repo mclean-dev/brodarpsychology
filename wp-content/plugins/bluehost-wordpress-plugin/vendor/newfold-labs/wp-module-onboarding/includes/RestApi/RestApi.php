@@ -15,9 +15,11 @@ final class RestApi {
 	 * @var array
 	 */
 	protected $controllers = array(
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\AppController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\BlueprintsController',
 		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\SiteImagesController',
-		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\Themes\\ThemeGeneratorController',
 		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\PluginsController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\ReduxStateController',
 		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\Themes\\ThemeVariationsController',
 		'NewfoldLabs\WP\\Module\\Onboarding\\RestApi\\Themes\\ApprovedThemesController',
 		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\Themes\\PatternsController',
@@ -29,6 +31,11 @@ final class RestApi {
 		'NewfoldLabs\WP\\Module\\Onboarding\\RestApi\\Themes\\ThemeFontsController',
 		'NewfoldLabs\WP\\Module\\Onboarding\\RestApi\\Themes\\ThemeColorsController',
 		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\SiteClassificationController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\SiteGenController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\PreviewsController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\LanguagesController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\DesignController',
+		'NewfoldLabs\\WP\\Module\\Onboarding\\RestApi\\GlobalStylesController',
 	);
 
 	/**
@@ -54,4 +61,4 @@ final class RestApi {
 			$instance->register_routes();
 		}
 	}
-} // END /NewfoldLabs/WP/Module/Onboarding/RestApi()
+}

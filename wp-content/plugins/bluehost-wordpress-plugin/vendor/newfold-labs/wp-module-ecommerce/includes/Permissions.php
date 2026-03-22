@@ -10,9 +10,12 @@ final class Permissions {
 	/**
 	 * WordPress Admin capability string
 	 */
-	const ADMIN          = 'manage_options';
-	const INSTALL_THEMES = 'install_themes';
-	const EDIT_THEMES    = 'edit_themes';
+	const ADMIN = 'manage_options';
+
+	/**
+	 * WooCommerce Shop Manager capability string
+	 */
+	const SHOP_MANAGER = 'manage_woocommerce';
 
 	/**
 	 * Confirm REST API caller has ADMIN user capabilities.
@@ -20,16 +23,15 @@ final class Permissions {
 	 * @return boolean
 	 */
 	public static function rest_is_authorized_admin() {
-		return \is_user_logged_in() && \current_user_can( Permissions::ADMIN );
+		return \is_user_logged_in() && \current_user_can( self::ADMIN );
 	}
 
 	/**
-	 * Permission check to see if the current user can manage themes.
+	 * Confirm REST API caller has ADMIN user capabilities.
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
-	public static function rest_can_manage_themes() {
-		return \is_user_logged_in() && \current_user_can( Permissions::INSTALL_THEMES ) && \current_user_can( Permissions::EDIT_THEMES );
+	public static function rest_is_authorized_shop_manager() {
+		return \is_user_logged_in() && \current_user_can( self::SHOP_MANAGER );
 	}
-
 }

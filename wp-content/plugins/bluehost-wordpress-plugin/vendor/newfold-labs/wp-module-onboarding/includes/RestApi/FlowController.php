@@ -1,9 +1,14 @@
 <?php
 namespace NewfoldLabs\WP\Module\Onboarding\RestApi;
 
+use NewfoldLabs\WP\Module\Onboarding\Data\Options;
 use NewfoldLabs\WP\Module\Onboarding\Permissions;
-use NewfoldLabs\WP\Module\Onboarding\Services\FlowService;
-
+use NewfoldLabs\WP\Module\Onboarding\Data\Services\FlowService;
+use NewfoldLabs\WP\Module\Onboarding\Services\PluginService;
+use NewfoldLabs\WP\Module\Onboarding\Data\Services\SiteGenService;
+use NewfoldLabs\WP\Module\Onboarding\Data\Services\GlobalStylesService;
+use NewfoldLabs\WP\Module\Onboarding\Services\StatusService;
+use NewfoldLabs\WP\Module\Onboarding\Data\Services\TemplatePartsService;
 
 /**
  * Class FlowController
@@ -109,6 +114,10 @@ class FlowController {
 	public function save_onboarding_flow_data( \WP_REST_Request $request ) {
 		$params = json_decode( $request->get_body(), true );
 
+		// Mark Onboarding as started only on the first REST API request from the React App.
+		update_option( Options::get_option_name( 'redirect' ), '0' );
+		StatusService::handle_started();
+
 		$flow_data = FlowService::update_data( $params );
 		if ( is_wp_error( $flow_data ) ) {
 			return $flow_data;
@@ -121,30 +130,70 @@ class FlowController {
 	}
 
 	/**
-	 * Flow completion API for child theme generation, verify child theme and publish site pages.
+	 * Handles the completion of different onboarding flows.
 	 *
-	 * @return \WP_REST_Response|\WP_Error
+	 * This function processes the completion of various onboarding flows,
+	 * such as site generation and site page publishing, and updates global
+	 * styles and template parts if necessary.
+	 *
+	 * @param \WP_REST_Request $request The request object containing the flow parameter.
+	 *
+	 * @return \WP_REST_Response|\WP_Error A WP_REST_Response object on success, or a WP_Error object on failure.
 	 */
-	public function complete() {
-		$site_pages_publish_request  = new \WP_REST_Request(
+	public function complete( $request ) {
+		// Retrieve the 'flow' parameter from the request
+		$flow = $request->get_param( 'flow' );
+
+		if ( 'sitegen' === $flow ) {
+			// Read flow data from the WordPress options table
+			$flow_data_option = FlowService::read_data_from_wp_option( false );
+			// Check if flow data does not exist or 'data' key is not set
+			if ( false === $flow_data_option || ! isset( $flow_data_option['data'] ) ) {
+				return new \WP_Error(
+					'nfd_onboarding_error',
+					__( 'Flow data does not exist to generate a child theme.', 'wp-module-onboarding' ),
+					array( 'status' => 500 )
+				);
+			}
+			// Retrieve homepage data and the active homepage from the flow data
+			$homepage_data   = $flow_data_option['sitegen']['homepages']['data'];
+			$active_homepage = $flow_data_option['sitegen']['homepages']['active'];
+			// Complete the Sitegen flow using the retrieved data
+			SiteGenService::complete( $active_homepage, $homepage_data );
+			return new \WP_REST_Response(
+				array(),
+				201
+			);
+		}
+		// If the flow is not 'sitegen', proceed with publishing site pages
+		$site_pages_publish_request = new \WP_REST_Request(
 			'POST',
 			'/newfold-onboarding/v1/site-pages/publish'
 		);
-		$site_pages_publish_response = \rest_do_request( $site_pages_publish_request );
+		// Execute the request to publish site pages
+		$site_pages_publish_response = rest_do_request( $site_pages_publish_request );
 		if ( $site_pages_publish_response->is_error() ) {
 			return $site_pages_publish_response->as_error();
 		}
-		$child_theme_generation_request  = new \WP_REST_Request(
-			'POST',
-			'/newfold-onboarding/v1/themes/child/generate'
-		);
-		$child_theme_generation_response = \rest_do_request( $child_theme_generation_request );
-		if ( $child_theme_generation_response->is_error() ) {
-			return $child_theme_generation_response->as_error();
+
+		// Get the post ID of the active custom global styles and update it
+		$active_custom_global_styles_post_id = GlobalStylesService::get_active_custom_global_styles_post_id();
+		$status                              = GlobalStylesService::update_diy_global_style_variation( $active_custom_global_styles_post_id, );
+		if ( is_wp_error( $status ) ) {
+			return $status;
 		}
 
+		// Update the selected template parts
+		$status = TemplatePartsService::update_diy_selected_template_parts();
+		if ( is_wp_error( $status ) ) {
+			return $status;
+		}
+
+		// Return a successful response after completing all processes
 		return new \WP_REST_Response(
-			array(),
+			array(
+				'message' => __( 'Success.', 'wp-module-onboarding' ),
+			),
 			201
 		);
 	}
@@ -160,6 +209,13 @@ class FlowController {
 		$status = FlowService::switch_flow( $flow );
 		if ( \is_wp_error( $status ) ) {
 			return $status;
+		}
+
+		if ( ! PluginService::initialize() ) {
+			return new \WP_REST_Response(
+				array(),
+				500
+			);
 		}
 
 		return new \WP_REST_Response(

@@ -13,7 +13,7 @@ class Scan {
 	 * @var array
 	 */
 	public $default_config = array(
-		'min_wp' => '6.1',
+		'min_wp' => '6.5',
 	);
 
 	/**
@@ -109,7 +109,5 @@ class Scan {
 		if ( 'scan-initiated' === $this->result ) {
 			$this->result = 'compatible';
 		}
-
 	}
-
 }

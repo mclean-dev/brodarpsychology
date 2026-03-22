@@ -1,0 +1,144 @@
+[12-Nov-2023 17:34:31 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[13-Nov-2023 14:38:01 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[14-Nov-2023 06:28:54 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[14-Nov-2023 20:36:07 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[17-Nov-2023 01:06:36 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[19-Nov-2023 05:02:21 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[19-Nov-2023 08:00:48 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[19-Nov-2023 20:04:39 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[22-Nov-2023 02:12:22 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[22-Nov-2023 22:03:47 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[23-Nov-2023 11:21:16 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[24-Nov-2023 05:01:11 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[24-Nov-2023 05:52:09 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[24-Nov-2023 22:40:37 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[27-Nov-2023 05:46:43 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[27-Nov-2023 05:54:19 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[31-Dec-2023 19:30:29 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[28-Jan-2024 12:22:38 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[19-Feb-2024 07:50:47 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[09-Jun-2024 05:33:42 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[10-Jun-2024 04:41:45 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[17-Jun-2024 15:27:18 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[08-Jul-2024 05:27:20 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[29-Sep-2024 13:21:35 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[01-Oct-2024 22:37:51 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[03-Oct-2024 20:34:46 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[07-Oct-2024 03:43:48 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[09-Oct-2024 01:41:38 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[09-Oct-2024 07:21:58 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[10-Oct-2024 05:47:10 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[01-Nov-2024 05:57:38 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[01-Nov-2024 22:14:08 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[03-Nov-2024 18:59:19 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[04-Nov-2024 01:23:36 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[05-Nov-2024 17:33:40 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8
+[24-Nov-2024 00:54:43 America/Boise] PHP Fatal error:  Uncaught Error: Undefined constant "ABSPATH" in /home3/brodarps/public_html/wp-includes/blocks/index.php:8
+Stack trace:
+#0 {main}
+  thrown in /home3/brodarps/public_html/wp-includes/blocks/index.php on line 8

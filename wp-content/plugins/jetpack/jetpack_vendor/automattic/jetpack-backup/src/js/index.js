@@ -1,9 +1,18 @@
 import { ThemeProvider } from '@automattic/jetpack-components';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createReduxStore, register } from '@wordpress/data';
 import * as WPElement from '@wordpress/element';
 import React from 'react';
 import Admin from './components/Admin';
 import { STORE_ID, storeConfig } from './store';
+
+const queryClient = new QueryClient( {
+	defaultOptions: {
+		queries: {
+			staleTime: Infinity,
+		},
+	},
+} );
 
 const store = createReduxStore( STORE_ID, storeConfig );
 register( store );
@@ -18,17 +27,14 @@ function render() {
 		return;
 	}
 
-	// @todo: Remove fallback when we drop support for WP 6.1
 	const component = (
-		<ThemeProvider>
-			<Admin />
-		</ThemeProvider>
+		<QueryClientProvider client={ queryClient }>
+			<ThemeProvider>
+				<Admin />
+			</ThemeProvider>
+		</QueryClientProvider>
 	);
-	if ( WPElement.createRoot ) {
-		WPElement.createRoot( container ).render( component );
-	} else {
-		WPElement.render( component, container );
-	}
+	WPElement.createRoot( container ).render( component );
 }
 
 render();
